@@ -119,7 +119,7 @@ select,input{font:inherit;color:inherit}
 .kpi .val{margin-top:4px;font-size:27px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--acc,var(--env))}
 .kpi .val small{font-size:14px;color:var(--faint);font-weight:500}
 .kpi .delta{margin-top:2px;font-size:11.5px;font-weight:600}
-.kpi .delta.up{color:var(--env)} .kpi .delta.down{color:var(--danger)}
+.kpi .delta.up{color:var(--env)} .kpi .delta.down{color:var(--danger)} .kpi .delta.good{color:var(--env)}
 
 .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;font-size:13px;font-weight:600;
   border:1px solid transparent;transition:filter .12s}
@@ -197,6 +197,9 @@ tr.overdue td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
 .lgd button i.dash{height:0;width:12px;border-radius:0;border-top:2px dashed var(--faint)}
 .lgd button.off{opacity:.38}
 .lgd button.off span{text-decoration:line-through}
+.hmrow{display:grid;grid-template-columns:22px repeat(12,1fr);gap:3px;align-items:center;margin-top:3px}
+.hml{font-size:11px;font-weight:700}
+.hmc{border-radius:4px;text-align:center;font-size:10px;font-weight:600;padding:3.5px 0;font-variant-numeric:tabular-nums}
 .insights{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .insights span{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:600}
 .spark{display:block;width:100%;max-width:130px;height:22px;margin-top:8px;opacity:.95}
@@ -219,7 +222,7 @@ tr.overdue td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
 .badge-card{display:flex;gap:12px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
 .badge-card .bico{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--game-soft)}
 .badge-card b{font-size:13.5px;display:block}
-.badge-card .rule{font-size:11.5px;color:var(--muted);margin-top:2px}
+.badge-card .rule{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
 .badge-card.locked{opacity:.55;filter:grayscale(.9)}
 .badge-card.locked .bico{background:var(--line2)}
 
@@ -269,7 +272,7 @@ tr.overdue td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
       <span><b>EcoSphere</b><small>ESG Platform</small></span>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot">Wireframe v2 · offline · demo data</div>
+    <div class="side-foot" id="sideFoot">Acme Corp · OUID OU-1001</div>
   </aside>
 
   <div class="main">
@@ -278,7 +281,7 @@ tr.overdue td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
       <div class="search" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3-3"/></svg>Search records, challenges, policies…<kbd>⌘K</kbd></div>
       <div class="spacer"></div>
       <div class="persona" id="persona" title="Role-based navigation demo">
-        <button data-p="admin" class="on">Admin</button><button data-p="employee">Employee</button>
+        <button data-p="employee">Employee</button><button data-p="admin" class="on">Admin</button><button data-p="super" title="Odoo platform-level admin — sees all organizations">Super Admin</button>
       </div>
       <button class="iconbtn" id="bellBtn" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0"/></svg><span class="ping"></span></button>
       <span class="avatar" id="avatar">AR</span>
@@ -303,16 +306,16 @@ tr.overdue td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
 /* =================== STATIC DEMO DATA (wireframe-only) =================== */
 const DATA = {
   scores:{E:82,S:74,G:88,overall:81,weights:{E:40,S:30,G:30}},
-  trend:{E:[70,72,71,74,76,75,78,77,80,79,81,82],
-         S:[66,68,66,69,71,69,72,70,73,72,73,74],
-         G:[78,80,79,82,83,82,84,83,86,85,87,88]},
+  trend:{E:[70,75,68,62,74,79,71,66,77,84,78,82],
+         S:[66,61,70,74,65,60,72,78,69,64,76,74],
+         G:[78,84,76,88,81,74,86,79,90,83,92,88]},
   target:85,
   deptTrend:{
-    'Manufacturing':[78,79,80,81,82,82,83,83,84,85,85,86],
-    'Corporate':    [76,77,76,78,79,79,80,81,82,82,83,83],
-    'R&D':          [72,73,72,74,75,74,76,76,77,78,78,79],
-    'Sales':        [63,64,65,66,67,66,68,69,70,71,71,72],
-    'Logistics':    [52,54,53,56,58,57,59,60,62,63,64,65],
+    'Manufacturing':[78,84,75,88,80,86,77,90,82,92,85,86],
+    'Corporate':    [76,70,82,74,86,78,71,84,76,88,80,83],
+    'R&D':          [72,78,68,80,71,83,74,68,85,76,82,79],
+    'Sales':        [63,70,58,72,64,74,60,75,66,76,68,72],
+    'Logistics':    [52,60,48,63,55,66,50,68,58,70,60,65],
   },
   months:['Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul'],
   deptScores:[
@@ -337,20 +340,37 @@ const DATA = {
     {n:'Office energy −15%',dept:'Corporate',target:'80 t',cur:'80 t',p:100,due:'2026-06-30',s:['Completed','p-soc']},
   ],
   scopes:[{n:'Scope 1 — direct + fleet',v:46,pc:25},{n:'Scope 2 — electricity',v:61,pc:33},{n:'Scope 3 — value chain',v:77,pc:42}],
-  monthlyCO2:[21,19,22,18,17,16,18,15,16,14,15,13],
+  monthlyCO2:[21,26,18,24,16,22,14,19,25,15,20,13],
   csr:[
     {n:'Tree Plantation Drive',cat:'Community',joined:24,pts:50,ev:true,when:'Jul 20'},
     {n:'Blood Donation Camp',cat:'Health',joined:18,pts:40,ev:true,when:'Jul 26'},
     {n:'Beach Cleanup',cat:'Environment',joined:31,pts:60,ev:true,when:'Aug 02'},
     {n:'ESG Awareness Workshop',cat:'Education',joined:52,pts:30,ev:false,when:'Aug 09'},
+    {n:'Pride Month Ally Walk',cat:'Inclusion',joined:39,pts:45,ev:false,when:'Jun 28'},
+    {n:'Inclusive Hiring Mentorship',cat:'Inclusion',joined:12,pts:55,ev:true,when:'Ongoing'},
   ],
   queue:[
     {e:'Aditi Rao',a:'Tree Plantation Drive',proof:'plantation.jpg',pts:50,done:'2026-07-08',s:'Pending'},
     {e:'Karan Shah',a:'Beach Cleanup',proof:null,pts:60,done:'2026-07-07',s:'Pending'},
     {e:'Priya S.',a:'ESG Workshop',proof:'certificate.pdf',pts:30,done:'2026-07-05',s:'Approved'},
   ],
-  diversity:[['Women in workforce',41],['Women in leadership',28],['Persons with disabilities',4],['Avg training hours / employee',72]],
+  repr:[['Women in workforce',41],['Women in leadership',28],['LGBTQIA+ (voluntary self-ID)',6],['Persons with disabilities',4]],
+  culture:{stats:[['Nationalities','14'],['Languages spoken','9'],['Pay equity (F:M)','0.96'],['Avg age','31']],
+    gens:[['Gen Z',22],['Millennials',48],['Gen X',24],['Boomers+',6]]},
   training:[['Manufacturing',88],['Corporate',95],['R&D',81],['Sales',74],['Logistics',69]],
+  commute:[['Public transport',38],['Private vehicle',34],['Carpool',14],['Walk / cycle',8],['EV',6]],
+  skus:[
+    {sku:'STL-BRKT-01',p:'Steel bracket',co2:'1.95 kg/unit',w:'1.4×',rec:90,r:'B',trend:[2.10,1.92,2.25,1.98,2.30,2.05,1.88,2.18,1.96,2.24,2.02,1.95]},
+    {sku:'PKG-BOX-12',p:'Packaging box',co2:'0.42 kg/unit',w:null,rec:75,r:'A',trend:[0.55,0.48,0.60,0.44,0.52,0.40,0.47,0.58,0.43,0.50,0.45,0.42]},
+    {sku:'PCB-CTRL-A2',p:'Circuit board',co2:'8.10 kg/unit',w:'2.0×',rec:30,r:'C',trend:[8.6,7.9,9.1,8.2,7.6,8.9,8.0,9.3,8.4,7.8,8.7,8.1]},
+    {sku:'ALU-FRM-07',p:'Aluminium frame',co2:'3.60 kg/unit',w:null,rec:95,r:'A',trend:[4.1,3.7,4.3,3.8,3.5,4.0,3.6,4.2,3.9,3.4,3.8,3.6]},
+  ],
+  certs:[
+    {n:'ISO 27001 — Information Security',s:['Certified','p-env'],until:'Valid to Mar 2027',next:'Surveillance audit · Nov 2026',i:'🔐'},
+    {n:'ISO 14001 — Environmental Management',s:['Certified','p-env'],until:'Valid to Nov 2026',next:'Recertification audit · Oct 2026',i:'🌿'},
+    {n:'SOC 2 Type II',s:['Report issued','p-soc'],until:'Period Jul 2025 – Jun 2026',next:'Next audit window · Jan 2027',i:'🧾'},
+    {n:'VAPT — external + internal',s:['2 findings open','p-game'],until:'Last test · Jun 2026',next:'Retest of open findings · Aug 2026',i:'🛡️'},
+  ],
   policies:[
     {n:'Anti-Corruption Policy',v:'v3',ack:92,upd:'2026-05-02'},
     {n:'Code of Conduct',v:'v5',ack:96,upd:'2026-04-11'},
@@ -359,9 +379,11 @@ const DATA = {
   ],
   myAcks:[{n:'Environmental Policy',v:'v1',due:'2026-07-15',done:false},{n:'Data Privacy Policy',v:'v2',due:'2026-07-10',done:false},{n:'Code of Conduct',v:'v5',due:'—',done:true}],
   audits:[
-    {t:'Q2 Waste Audit',dept:'Manufacturing',by:'S. Nair',date:'2026-06-12',issues:3,s:['Completed','p-soc']},
-    {t:'Vendor Compliance Check',dept:'Procurement',by:'R. Iyer',date:'2026-07-01',issues:1,s:['Under review','p-gov']},
-    {t:'Fleet Safety Audit',dept:'Logistics',by:'A. Mehta',date:'2026-07-09',issues:2,s:['In progress','p-game']},
+    {t:'Q2 Waste Audit',type:'Internal · ESG',dept:'Manufacturing',by:'S. Nair',date:'2026-06-12',issues:3,s:['Completed','p-soc']},
+    {t:'External VAPT (web + infra)',type:'Security · VAPT',dept:'IT',by:'RedShield Labs',date:'2026-06-20',issues:2,s:['Completed','p-soc']},
+    {t:'Vendor Compliance Check',type:'Internal · Supply chain',dept:'Procurement',by:'R. Iyer',date:'2026-07-01',issues:1,s:['Under review','p-gov']},
+    {t:'ISO 27001 surveillance',type:'Certification',dept:'Corporate',by:'BSI',date:'2026-05-15',issues:0,s:['Completed','p-soc']},
+    {t:'Fleet Safety Audit',type:'Internal · Safety',dept:'Logistics',by:'A. Mehta',date:'2026-07-09',issues:2,s:['In progress','p-game']},
   ],
   issues:[
     {i:'Missing MSDS sheets on line 3',audit:'Q2 Waste Audit',sev:'High',own:'S. Nair',due:'2026-07-04',s:'Overdue'},
@@ -370,34 +392,77 @@ const DATA = {
     {i:'Expired fire NOC copy',audit:'Q2 Waste Audit',sev:'Low',own:'S. Nair',due:'2026-06-28',s:'Resolved'},
   ],
   challenges:{
-    'Draft':[{t:'Commute Green Week',xp:120,d:'Medium',due:'Jul 25',ev:true}],
-    'Active':[{t:'Sustainability Sprint',xp:200,d:'Hard',due:'Jul 20',ev:true},{t:'Recycle Challenge',xp:80,d:'Easy',due:'Jul 15',ev:false}],
-    'Under Review':[{t:'Paperless Month',xp:150,d:'Medium',due:'Jul 10',ev:true}],
-    'Completed':[{t:'Earth Hour Drive',xp:100,d:'Easy',due:'Jun 30',ev:false}],
-    'Archived':[{t:'Winter Energy Save',xp:90,d:'Easy',due:'Jan 31',ev:false}],
+    'Draft':[{t:'Commute Green Week',cat:'Mobility',xp:120,d:'Medium',due:'Jul 25',ev:true}],
+    'Active':[{t:'Sustainability Sprint',cat:'Energy',xp:200,d:'Hard',due:'Jul 20',ev:true},{t:'Recycle Challenge',cat:'Waste',xp:80,d:'Easy',due:'Jul 15',ev:false}],
+    'Under Review':[{t:'Paperless Month',cat:'Waste',xp:150,d:'Medium',due:'Jul 10',ev:true}],
+    'Completed':[{t:'Earth Hour Drive',cat:'Energy',xp:100,d:'Easy',due:'Jun 30',ev:false}],
+    'Archived':[{t:'Winter Energy Save',cat:'Energy',xp:90,d:'Easy',due:'Jan 31',ev:false}],
   },
+  chQueue:[
+    {e:'Karan Shah',c:'Recycle Challenge',p:100,proof:'recycle-log.pdf',xp:80,s:'Pending'},
+    {e:'Sana K.',c:'Sustainability Sprint',p:100,proof:null,xp:200,s:'Pending'},
+    {e:'Aditi Rao',c:'Earth Hour Drive',p:100,proof:'photo.jpg',xp:100,s:'Approved'},
+  ],
   myChallenges:[
     {c:'Sustainability Sprint',p:65,proof:null,s:'In progress',xp:'—'},
     {c:'Recycle Challenge',p:100,proof:'recycle-log.pdf',s:'Under review',xp:'—'},
     {c:'Earth Hour Drive',p:100,proof:'photo.jpg',s:'Approved',xp:'+100'},
   ],
   badges:[
-    {i:'🌱',n:'Green Beginner',r:'Earn 100 XP',got:true},
-    {i:'♻️',n:'Carbon Saver',r:'Complete 3 challenges',got:true},
-    {i:'🏆',n:'Sustainability Champion',r:'Earn 2,500 XP',got:true},
-    {i:'🤝',n:'Team Player',r:'Join 5 CSR activities',got:false},
-    {i:'🔥',n:'Streak Master',r:'Complete challenges 3 months in a row',got:false},
-    {i:'⭐',n:'ESG Legend',r:'Reach 10,000 XP',got:false},
+    {i:'🌱',n:'Green Beginner',ds:'Your first steps into sustainability',r:'Earn 100 XP',got:true},
+    {i:'♻️',n:'Carbon Saver',ds:'Consistent, measurable carbon action',r:'Complete 3 challenges',got:true},
+    {i:'🏆',n:'Sustainability Champion',ds:'A role model across the organization',r:'Earn 2,500 XP',got:true},
+    {i:'🤝',n:'Team Player',ds:'Shows up for the community',r:'Join 5 CSR activities',got:false},
+    {i:'🔥',n:'Streak Master',ds:'Sustainability as a habit, not an event',r:'Complete challenges 3 months in a row',got:false},
+    {i:'⭐',n:'ESG Legend',ds:'The rarest badge on the platform',r:'Reach 10,000 XP',got:false},
   ],
   lbEmp:[['Aditi Rao','Corporate',3910],['Priya S.','Manufacturing',3480],['Karan Shah','R&D',2955],['Rohit V.','Logistics',2410],['Sana K.','Sales',2105]],
   lbDept:[['Manufacturing',4820],['Corporate',4210],['R&D',3505],['Sales',2890],['Logistics',2340]],
   rewards:[
-    {n:'Extra WFH day',cost:500,stock:12,i:'🏠'},
-    {n:'Eco tote + steel bottle',cost:300,stock:40,i:'🎒'},
-    {n:'Plant a tree in your name',cost:150,stock:0,i:'🌳'},
-    {n:'Lunch with leadership',cost:900,stock:3,i:'🍽️'},
+    {n:'Extra WFH day',cost:500,stock:12,i:'🏠',cat:'Time off'},
+    {n:'Half-day Friday',cost:400,stock:8,i:'🌤️',cat:'Time off'},
+    {n:'Eco tote + steel bottle',cost:300,stock:40,i:'🎒',cat:'Eco gear'},
+    {n:'Company organic-cotton hoodie',cost:280,stock:34,i:'👕',cat:'Eco gear'},
+    {n:'Solar power bank',cost:450,stock:6,i:'🔋',cat:'Eco gear'},
+    {n:'1-month metro / transit pass',cost:300,stock:20,i:'🚇',cat:'Green mobility'},
+    {n:'EV charging credit',cost:350,stock:15,i:'⚡',cat:'Green mobility'},
+    {n:'Bicycle service voucher',cost:180,stock:10,i:'🚲',cat:'Green mobility'},
+    {n:'Plant a tree in your name',cost:150,stock:0,i:'🌳',cat:'Donations'},
+    {n:'₹1,000 donation to a cause you pick',cost:200,stock:100,i:'💝',cat:'Donations'},
+    {n:'Pride march — paid volunteer day',cost:350,stock:18,i:'🏳️‍🌈',cat:'Inclusion & Pride'},
+    {n:'₹1,000 to an LGBTQIA+ support charity',cost:200,stock:100,i:'🤍',cat:'Inclusion & Pride'},
+    {n:'DEI library — a book of your choice',cost:220,stock:16,i:'📚',cat:'Inclusion & Pride'},
+    {n:'Gift an inclusion-workshop seat to a teammate',cost:300,stock:12,i:'🎓',cat:'Inclusion & Pride'},
+    {n:'Movie night — 2 tickets',cost:250,stock:25,i:'🎬',cat:'Experiences'},
+    {n:'Lunch with leadership',cost:900,stock:3,i:'🍽️',cat:'Experiences'},
+    {n:'Standing-desk upgrade',cost:1200,stock:5,i:'🪑',cat:'Experiences'},
+    {n:'Weekend eco-resort stay for 2',cost:2500,stock:2,i:'🏞️',cat:'Experiences'},
   ],
   me:{name:'Aditi Rao',xp:3910,points:640,badges:3,rank:1},
+  orgs:[
+    {ouid:'OU-1001',o:'Acme Corp',admin:'A. Mehta',emp:322,E:82,S:74,G:88,t:81},
+    {ouid:'OU-1002',o:'Helix Pharma',admin:'T. Rao',emp:610,E:88,S:71,G:90,t:84},
+    {ouid:'OU-1003',o:'Zenith Textiles',admin:'F. Khan',emp:540,E:71,S:80,G:75,t:75},
+    {ouid:'OU-1004',o:'Nova Foods',admin:'L. D’Souza',emp:275,E:64,S:69,G:81,t:70},
+  ],
+  alertsSA:[
+    {ouid:'OU-1004',org:'Nova Foods',sev:'High',when:'2 months running',
+     msg:'Overall ESG 70 — below the platform threshold (75) for 2 consecutive months; Environmental pillar at 64 and falling.',
+     target:'Department: Packaging (score 58) · Employees: 6 with zero CSR/challenge participation this quarter',
+     sugg:'Clone the “Zero-landfill packaging line” goal into monthly milestones, launch a Waste challenge scoped to Packaging, and auto-enrol the 6 inactive employees in the next CSR drive.'},
+    {ouid:'OU-1003',org:'Zenith Textiles',sev:'Medium',when:'this quarter',
+     msg:'Environmental pillar dropped 4 pts this quarter — water usage per unit is up 11%.',
+     target:'Department: Dyeing unit (score 61) · Employees: shift supervisors (proof approvals pending 9 days)',
+     sugg:'Set a water-recycling milestone on the existing goal, schedule a Scope 2 audit for the dyeing unit, and clear the approvals backlog to unblock participation XP.'},
+  ],
+  allGoals:[
+    {org:'Helix Pharma',g:'Solar to cover 60% of plant load',own:'T. Rao',p:92,due:'2026-08-31',s:['On track','p-env']},
+    {org:'Acme Corp',g:'Cut packaging waste',own:'S. Nair',p:82,due:'2026-09-30',s:['On track','p-env']},
+    {org:'Acme Corp',g:'Reduce fleet emissions 20%',own:'A. Mehta',p:78,due:'2026-12-31',s:['Active','p-env']},
+    {org:'Zenith Textiles',g:'Recycle 40% of process water',own:'F. Khan',p:55,due:'2026-10-31',s:['Active','p-env']},
+    {org:'Nova Foods',g:'Zero-landfill packaging line',own:'L. D’Souza',p:31,due:'2026-09-30',s:['At risk','p-game']},
+    {org:'Zenith Textiles',g:'Women in leadership ≥ 35%',own:'F. Khan',p:64,due:'2027-03-31',s:['Active','p-soc']},
+  ],
   departments:[
     {n:'Manufacturing',c:'MFG',h:'S. Nair',p:'—',emp:134,s:'Active'},
     {n:'Logistics',c:'LOG',h:'R. Iyer',p:'Manufacturing',emp:58,s:'Active'},
@@ -405,7 +470,7 @@ const DATA = {
     {n:'R&D',c:'RND',h:'V. Krishnan',p:'Corporate',emp:37,s:'Active'},
     {n:'Sales',c:'SLS',h:'N. Gupta',p:'Corporate',emp:52,s:'Active'},
   ],
-  categories:[['Community','CSR Activity'],['Health','CSR Activity'],['Education','CSR Activity'],['Environment','CSR Activity'],['Energy','Challenge'],['Waste','Challenge'],['Mobility','Challenge']],
+  categories:[['Community','CSR Activity'],['Health','CSR Activity'],['Education','CSR Activity'],['Environment','CSR Activity'],['Inclusion','CSR Activity'],['Energy','Challenge'],['Waste','Challenge'],['Mobility','Challenge']],
   factors:[
     {n:'Diesel',scope:1,u:'litre',f:'2.68 kg CO₂e/L',src:'DEFRA 2025'},
     {n:'Petrol',scope:1,u:'litre',f:'2.31 kg CO₂e/L',src:'DEFRA 2025'},
@@ -423,15 +488,15 @@ const DATA = {
 
 /* =================== NAV MODEL (mirrors the planned menu tree) =================== */
 const MODULES=[
-  {id:'dashboard',label:'Dashboard',grp:'Overview',icon:'grid',acc:'env',roles:['admin','employee'],tabs:[]},
+  {id:'dashboard',label:'Dashboard',grp:'Overview',icon:'grid',acc:'env',roles:['admin','employee','super'],tabs:[]},
   {id:'environmental',label:'Environmental',grp:'Modules',icon:'leaf',acc:'env',roles:['admin'],tabs:[
-    ['transactions','Carbon Transactions'],['goals','Goals'],['envdash','Environmental Dashboard']]},
+    ['transactions','Carbon Transactions'],['goals','Goals'],['products','Products (SKU)'],['envdash','Environmental Dashboard']]},
   {id:'social',label:'Social',grp:'Modules',icon:'users',acc:'soc',roles:['admin','employee'],tabs:[
     ['csr','CSR Activities'],['participation','Participations'],['diversity','Diversity & Training']]},
   {id:'governance',label:'Governance',grp:'Modules',icon:'shield',acc:'gov',roles:['admin','employee'],tabs:[
-    ['policies','Policies'],['acks','Acknowledgements'],['audits','Audits'],['issues','Compliance Issues']]},
+    ['policies','Policies'],['acks','Acknowledgements'],['audits','Audits'],['issues','Compliance Issues'],['certs','Certifications']]},
   {id:'gamification',label:'Gamification',grp:'Modules',icon:'trophy',acc:'game',roles:['admin','employee'],tabs:[
-    ['challenges','Challenges'],['mine','My Participation'],['leaderboard','Leaderboard'],['badges','Badges'],['rewards','Rewards']]},
+    ['challenges','Challenges'],['mine','Participations'],['leaderboard','Leaderboard'],['badges','Badges'],['rewards','Rewards']]},
   {id:'reports',label:'Reporting',grp:'Insights',icon:'doc',acc:'env',roles:['admin'],tabs:[
     ['summary','ESG Summary'],['environmental','Environmental'],['social','Social'],['governance','Governance'],['builder','Custom Builder']]},
   {id:'settings',label:'Settings',grp:'Insights',icon:'cog',acc:'env',roles:['admin'],tabs:[
@@ -473,10 +538,10 @@ const toggle=(title,sub,on=true)=>`<div class="toggle" data-toggle><div class="t
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
 
 /* multi-series ESG trend chart: pillar lines + weighted overall + target + hover tooltips */
-const chartState={overall:true,E:true,S:true,G:true,target:true,mode:'trend'};
+const chartState={overall:true,E:true,S:true,G:true,target:true,mode:'trend',series:'overall'};
 const overallTrend=()=>DATA.trend.E.map((v,i)=>Math.round(v*.4+DATA.trend.S[i]*.3+DATA.trend.G[i]*.3));
 /* box-plot mode: per-month distribution of department total scores */
-function boxChart(Y){
+function boxChart(){
   const names=Object.keys(DATA.deptTrend), n=12, w=100/n;
   const months=Array.from({length:n},(_,i)=>{
     const vals=names.map(d=>DATA.deptTrend[d][i]);
@@ -484,17 +549,22 @@ function boxChart(Y){
     const best=names[vals.indexOf(s[4])], worst=names[vals.indexOf(s[0])];
     return {min:s[0],q1:(s[0]+s[1])/2,med:s[2],q3:(s[3]+s[4])/2,max:s[4],best,worst};
   });
-  const bw=w*.48;
+  /* y-domain from the data (plus target) so nothing ever clips */
+  const all=names.flatMap(d=>DATA.deptTrend[d]);
+  const lo=Math.min(...all)-4, hi=Math.max(Math.max(...all),chartState.target?DATA.target:0)+4;
+  const Y=v=>2+(1-(v-lo)/(hi-lo))*42;
+  const ticks=[];for(let v=Math.ceil(lo/10)*10;v<=hi;v+=10)ticks.push(v);
+  const bw=w*.4;
   const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="Department score spread by month" style="height:200px">
-    ${[60,70,80,90].map(v=>`<line x1="0" y1="${Y(v)}" x2="100" y2="${Y(v)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
-    ${chartState.target?`<line x1="0" y1="${Y(DATA.target)}" x2="100" y2="${Y(DATA.target)}" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>`:''}
-    <polyline points="${months.map((m,i)=>`${((i+.5)*w).toFixed(1)},${Y(m.med).toFixed(1)}`).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity=".45" vector-effect="non-scaling-stroke"/>
+    ${ticks.map(v=>`<line x1="0" y1="${Y(v).toFixed(1)}" x2="100" y2="${Y(v).toFixed(1)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+    ${chartState.target?`<line x1="0" y1="${Y(DATA.target).toFixed(1)}" x2="100" y2="${Y(DATA.target).toFixed(1)}" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="5 4" opacity=".45" vector-effect="non-scaling-stroke"/>`:''}
     ${months.map((m,i)=>{const cx=(i+.5)*w;return `
-      <line x1="${cx}" y1="${Y(m.min)}" x2="${cx}" y2="${Y(m.max)}" stroke="var(--env)" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
-      <line x1="${cx-bw*.3}" y1="${Y(m.max)}" x2="${cx+bw*.3}" y2="${Y(m.max)}" stroke="var(--env)" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
-      <line x1="${cx-bw*.3}" y1="${Y(m.min)}" x2="${cx+bw*.3}" y2="${Y(m.min)}" stroke="var(--env)" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
-      <rect x="${cx-bw/2}" y="${Y(m.q3)}" width="${bw}" height="${Y(m.q1)-Y(m.q3)}" rx=".6" fill="var(--env)" fill-opacity=".16" stroke="var(--env)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
-      <line x1="${cx-bw/2}" y1="${Y(m.med)}" x2="${cx+bw/2}" y2="${Y(m.med)}" stroke="var(--ink)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;}).join('')}
+      <line x1="${cx}" y1="${Y(m.max).toFixed(1)}" x2="${cx}" y2="${Y(m.q3).toFixed(1)}" stroke="var(--env)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <line x1="${cx}" y1="${Y(m.q1).toFixed(1)}" x2="${cx}" y2="${Y(m.min).toFixed(1)}" stroke="var(--env)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <line x1="${cx-bw*.28}" y1="${Y(m.max).toFixed(1)}" x2="${cx+bw*.28}" y2="${Y(m.max).toFixed(1)}" stroke="var(--env)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <line x1="${cx-bw*.28}" y1="${Y(m.min).toFixed(1)}" x2="${cx+bw*.28}" y2="${Y(m.min).toFixed(1)}" stroke="var(--env)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <rect x="${cx-bw/2}" y="${Y(m.q3).toFixed(1)}" width="${bw}" height="${(Y(m.q1)-Y(m.q3)).toFixed(1)}" rx="1" fill="var(--env)" fill-opacity=".24" stroke="var(--env)" stroke-width="1.4" vector-effect="non-scaling-stroke"/>
+      <line x1="${cx-bw/2}" y1="${Y(m.med).toFixed(1)}" x2="${cx+bw/2}" y2="${Y(m.med).toFixed(1)}" stroke="var(--ink)" stroke-width="2.4" vector-effect="non-scaling-stroke"/>`;}).join('')}
   </svg>`;
   const dot=c=>`<i style="background:${c}"></i>`;
   const hs=months.map((m,i)=>{
@@ -517,7 +587,7 @@ function boxChart(Y){
     <span style="background:var(--danger-soft);color:var(--danger)">${last.worst} is the outlier at ${last.min}</span>
     <span style="background:var(--line2);color:var(--muted)">${last.best} leads at ${last.max}</span>
   </div>`;
-  return {svg,hs,lgd,insights};
+  return {svg,hs,lgd,insights,ticks,Y};
 }
 
 function trendChart(){
@@ -525,13 +595,13 @@ function trendChart(){
   const Y=v=>46-((v-55)/40)*44;                       // fixed 55–95 scale
   const X=i=>i*(100/(n-1));
   const modeBar=`<div class="filters" style="margin-bottom:12px">
-    <button data-cm="trend" class="${chartState.mode==='trend'?'on':''}">Pillar trend</button>
+    <button data-cm="trend" class="${chartState.mode==='trend'?'on':''}">Score trend</button>
     <button data-cm="box" class="${chartState.mode==='box'?'on':''}">Department spread</button>
   </div>`;
   if(chartState.mode==='box'){
-    const b=boxChart(Y);
+    const b=boxChart();
     return `${modeBar}<div class="tchart">
-        <div class="ylbls">${[60,70,80,90].map(v=>`<span style="top:${(Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
+        <div class="ylbls">${b.ticks.map(v=>`<span style="top:${(b.Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
         ${b.svg}<div class="hotspots">${b.hs}</div>
       </div>
       <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
@@ -539,28 +609,56 @@ function trendChart(){
   }
   const line=(vals,color,w,dash='')=>`<polyline points="${vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"
       fill="none" stroke="${color}" stroke-width="${w}" ${dash} stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
-  const series=[
-    ['E','Environmental','var(--env)',E],['S','Social','var(--soc)',S],['G','Governance','var(--gov)',G]];
-  const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="ESG scores, 12 months" style="height:200px">
-    ${[60,70,80,90].map(v=>`<line x1="0" y1="${Y(v)}" x2="100" y2="${Y(v)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
-    ${chartState.target?`<line x1="0" y1="${Y(DATA.target)}" x2="100" y2="${Y(DATA.target)}" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>`:''}
-    ${chartState.overall?`<polygon points="0,48 ${O.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')} 100,48" fill="var(--ink)" opacity=".05"/>`:''}
-    ${series.filter(s=>chartState[s[0]]).map(s=>line(s[3],s[2],1.6)).join('')}
-    ${chartState.overall?line(O,'var(--ink)',2.6):''}
+  /* raw monthly series + smoothed momentum line + variability band (ggplot style) */
+  const SEL={overall:['Overall','var(--ink)',O],E:['Environmental','var(--env)',E],S:['Social','var(--soc)',S],G:['Governance','var(--gov)',G]};
+  const sel=SEL[chartState.series]?chartState.series:'overall';
+  const [selLabel,selColor,raw]=SEL[sel];
+  const hw=2, sm=[], dev=[];
+  raw.forEach((_,i)=>{const a=Math.max(0,i-hw),b=Math.min(n-1,i+hw);const seg=raw.slice(a,b+1);
+    const m=seg.reduce((x,y)=>x+y,0)/seg.length; sm.push(m);
+    dev.push(seg.reduce((x,y)=>x+Math.abs(y-m),0)/seg.length);});
+  const bandHi=sm.map((v,i)=>v+dev[i]+.6), bandLo=sm.map((v,i)=>v-dev[i]-.6);
+  let dlo=Math.min(...raw,...bandLo)-2, dhi=Math.max(...raw,...bandHi)+2;
+  if(chartState.target){dlo=Math.min(dlo,DATA.target-3);dhi=Math.max(dhi,DATA.target+3);}
+  const Yc=v=>2+(1-(v-dlo)/(dhi-dlo))*42;
+  const step=(dhi-dlo)>26?10:5, ticks=[];for(let v=Math.ceil(dlo/step)*step;v<=dhi;v+=step)ticks.push(v);
+  const pts=vals=>vals.map((v,i)=>`${X(i).toFixed(1)},${Yc(v).toFixed(1)}`).join(' ');
+  const rpts=vals=>[...vals].reverse().map((v,idx)=>`${X(n-1-idx).toFixed(1)},${Yc(v).toFixed(1)}`).join(' ');
+  const seriesSel=`<div class="filters" style="margin-bottom:12px">
+    ${Object.entries(SEL).map(([k,v])=>`<button data-ss="${k}" class="${k===sel?'on':''}">${v[0]}</button>`).join('')}
+  </div>`;
+  const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="${selLabel} score — monthly and smoothed" style="height:200px">
+    ${ticks.map(v=>`<line x1="0" y1="${Yc(v).toFixed(1)}" x2="100" y2="${Yc(v).toFixed(1)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+    <polygon points="${pts(bandHi)} ${rpts(bandLo)}" fill="#94a3b8" opacity=".22"/>
+    <polyline points="${pts(raw)}" fill="none" stroke="${selColor}" stroke-width="1.4" opacity=".6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    ${raw.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Yc(v).toFixed(1)}" r=".9" fill="${selColor}" opacity=".8"/>`).join('')}
+    <polyline points="${pts(sm)}" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    ${chartState.target?`<line x1="0" y1="${Yc(DATA.target).toFixed(1)}" x2="100" y2="${Yc(DATA.target).toFixed(1)}" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="5 4" opacity=".45" vector-effect="non-scaling-stroke"/>`:''}
   </svg>`;
   const dot=c=>`<i style="background:${c}"></i>`;
-  const hs=O.map((_,i)=>{
+  const hs=raw.map((v,i)=>{
     const w=100/(n-1);
     const left=Math.max(0,X(i)-w/2), width=Math.min(100-left,w);
     const clamp=i<2?'left:0;transform:none':i>n-3?'left:auto;right:0;transform:none':'';
     return `<div class="hs" style="left:${left}%;width:${width}%">
-      <div class="tip" style="${clamp}"><b>${DATA.months[i]} ’26</b>
-        ${dot('var(--ink)')}Overall <b style="display:inline">${O[i]}</b><br>
-        ${dot('var(--env)')}E ${E[i]} &nbsp;${dot('var(--soc)')}S ${S[i]} &nbsp;${dot('var(--gov)')}G ${G[i]}
+      <div class="tip" style="${clamp}"><b>${DATA.months[i]} ’26 · ${selLabel}</b>
+        ${dot(selColor)}Actual <b style="display:inline">${sel==='overall'?O[i]:v}</b><br>
+        ${dot('var(--ink)')}Trend ${sm[i].toFixed(1)}<br>
+        ${dot('#94a3b8')}Typical range ${bandLo[i].toFixed(0)}–${bandHi[i].toFixed(0)}
       </div></div>`;}).join('');
-  const lgd=`<div class="lgd" role="group" aria-label="Toggle series">
-    ${[['overall','Overall','var(--ink)'],['E','Environmental','var(--env)'],['S','Social','var(--soc)'],['G','Governance','var(--gov)']]
-      .map(([k,l,c])=>`<button data-sr="${k}" class="${chartState[k]?'':'off'}"><i style="background:${c}"></i><span>${l}</span></button>`).join('')}
+  const heat=(vals,color)=>vals.map(v=>{const t=Math.round(15+((v-55)/40)*70);
+    return `<div class="hmc" style="background:color-mix(in srgb,${color} ${t}%,white);color:${v>=78?'#fff':'var(--ink)'}">${v}</div>`;}).join('');
+  const heatmap=`<div style="margin:16px 0 0 30px">
+      <p class="mut" style="font-size:11.5px;margin-bottom:6px">Raw pillar scores — heat view (darker = stronger)</p>
+      <div class="hmrow"><span class="hml" style="color:var(--env)">E</span>${heat(E,'var(--env)')}</div>
+      <div class="hmrow"><span class="hml" style="color:var(--soc)">S</span>${heat(S,'var(--soc)')}</div>
+      <div class="hmrow"><span class="hml" style="color:var(--gov)">G</span>${heat(G,'var(--gov)')}</div>
+    </div>`;
+  const series=[['E','Environmental','var(--env)',E],['S','Social','var(--soc)',S],['G','Governance','var(--gov)',G]];
+  const lgd=`<div class="lgd">
+    <button style="cursor:default"><i style="background:${selColor};height:2px;width:14px;border-radius:1px"></i><span>Monthly actual</span></button>
+    <button style="cursor:default"><i style="background:var(--ink);height:3px;width:14px;border-radius:1px"></i><span>Smoothed trend (5-mo)</span></button>
+    <button style="cursor:default"><i style="background:#94a3b8;opacity:.5"></i><span>Typical variability</span></button>
     <button data-sr="target" class="${chartState.target?'':'off'}"><i class="dash"></i><span>Target ${DATA.target}</span></button>
   </div>`;
   const up=O.filter((v,i)=>i&&v>O[i-1]).length;
@@ -573,13 +671,55 @@ function trendChart(){
     <span style="background:color-mix(in srgb,${lag[2]} 11%,white);color:${lag[2]}">${lag[1]} lags at ${lag[3][n-1]} · +${lag[3][n-1]-lag[3][0]} YTD</span>
     <span style="background:var(--line2);color:var(--muted)">${gap>0?gap+' pts to '+DATA.target+' target':'Target reached 🎉'}</span>
   </div>`;
-  return `${modeBar}<div class="tchart">
-      <div class="ylbls">${[60,70,80,90].map(v=>`<span style="top:${(Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
+  return `${modeBar}${seriesSel}<div class="tchart">
+      <div class="ylbls">${ticks.map(v=>`<span style="top:${(Yc(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
       ${svg}<div class="hotspots">${hs}</div>
     </div>
     <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
-    ${lgd}${insights}`;
+    ${lgd}${heatmap}${insights}`;
 }
+/* per-SKU embodied-carbon trend with toggleable series; axis rescales to visible SKUs */
+const skuState={};
+const SKUCOLORS=['var(--env)','var(--soc)','var(--gov)','var(--game-acc)'];
+function skuChart(){
+  const list=DATA.skus.map((s,i)=>({...s,color:SKUCOLORS[i%SKUCOLORS.length]}));
+  const vis=list.filter(s=>skuState[s.sku]!==false);
+  const lgd=`<div class="lgd" role="group" aria-label="Toggle SKUs" style="margin-top:0;margin-bottom:12px">
+    ${list.map(s=>`<button data-sku="${s.sku}" class="${skuState[s.sku]===false?'off':''}"><i style="background:${s.color}"></i><span>${s.sku}</span></button>`).join('')}
+  </div>`;
+  if(!vis.length) return lgd+'<p class="hint" style="padding:30px 0;text-align:center">All SKUs hidden — click a chip above to plot one.</p>';
+  const n=12, X=i=>i*(100/(n-1));
+  const all=vis.flatMap(s=>s.trend);
+  const lo=Math.min(...all)*.9, hi=Math.max(...all)*1.06, rng=hi-lo||1;
+  const Y=v=>2+(1-(v-lo)/rng)*42;
+  const fmt=v=>rng<2?v.toFixed(2):v.toFixed(1);
+  const gl=[.25,.5,.75].map(f=>lo+rng*f);
+  const dot=c=>`<i style="background:${c}"></i>`;
+  const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="Embodied CO2e per SKU" style="height:190px">
+    ${gl.map(v=>`<line x1="0" y1="${Y(v).toFixed(1)}" x2="100" y2="${Y(v).toFixed(1)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+    ${vis.map(s=>{
+      const p=s.trend.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+      return `<polygon points="0,46 ${p} 100,46" fill="${s.color}" opacity=".1"/>
+        <polyline points="${p}" fill="none" stroke="${s.color}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        ${s.trend.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="1" fill="${s.color}"/>`).join('')}`;
+    }).join('')}
+  </svg>`;
+  const hs=Array.from({length:n},(_,i)=>{
+    const w=100/(n-1);
+    const left=Math.max(0,X(i)-w/2), width=Math.min(100-left,w);
+    const clamp=i<2?'left:0;transform:none':i>n-3?'left:auto;right:0;transform:none':'';
+    return `<div class="hs" style="left:${left}%;width:${width}%">
+      <div class="tip" style="${clamp}"><b>${DATA.months[i]} ’26 · kg CO₂e / unit</b>
+        ${vis.map(s=>`${dot(s.color)}${s.sku} <b style="display:inline">${s.trend[i]}</b>`).join('<br>')}
+      </div></div>`;}).join('');
+  return `${lgd}<div class="tchart">
+      <div class="ylbls">${gl.map(v=>`<span style="top:${(Y(v)/48*100).toFixed(1)}%">${fmt(v)}</span>`).join('')}</div>
+      ${svg}<div class="hotspots">${hs}</div>
+    </div>
+    <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
+    <p class="hint">Click a SKU chip to toggle it — isolate one and the axis zooms to its own range.</p>`;
+}
+
 function barChart(vals,color='var(--env)',max){
   const hi=max||Math.max(...vals),w=100/vals.length;
   return `<svg class="chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label="bar chart">
@@ -592,6 +732,42 @@ function barChart(vals,color='var(--env)',max){
 const V={};
 
 V.dashboard=()=>{
+  if(persona==='super'){
+    const avg=Math.round(DATA.orgs.reduce((a,o)=>a+o.t,0)/DATA.orgs.length);
+    const onTrack=DATA.allGoals.filter(g=>g.p>=60).length;
+    return `
+    <div class="pagehead"><h1>Platform Overview — All Organizations</h1><p>Odoo Super Admin · cross-org roll-up. Org admins are scoped to their own organization by record rules.</p></div>
+    <div class="grid g4">
+      ${kpi('Organizations',DATA.orgs.length,'var(--ink)',null,'')}
+      ${kpi('Avg ESG score',avg,'var(--env)',['up','2 pts vs last qtr'])}
+      ${kpi('Goals on track',onTrack,'var(--env)',null,` of ${DATA.allGoals.length}`)}
+      ${kpi('Goals at risk',DATA.allGoals.filter(g=>g.s[0]==='At risk').length,'var(--danger)',null,'')}
+    </div>
+    ${card('Alerts & interventions <span class="pill p-game" style="vertical-align:2px;margin-left:6px">★ Premium</span>',
+      `<div style="border:1px solid var(--line);border-radius:10px;padding:2px 14px;margin-bottom:14px">
+        ${toggle('Underperformance alerting','Master switch — Super Admin turns alerting on/off; what to alert on is defined by each org\'s admin in their ESG Configuration',true)}
+      </div>`+
+      DATA.alertsSA.map(a=>`
+      <div class="note ${a.sev==='High'?'dgr':'warn'}" style="flex-direction:column;gap:7px;margin-bottom:10px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${chip(a.ouid)}<b>${a.org}</b>${sev(a.sev)}<span style="font-size:11px;opacity:.75">${a.when}</span></div>
+        <span>${a.msg}</span>
+        <span style="font-size:12.5px"><b>🎯 Where to act:</b> ${a.target}</span>
+        <span style="font-size:12.5px"><b>💡 Suggested plan:</b> ${a.sugg}</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
+          <button class="btn pri sm" data-act="sendsugg" data-org="${a.org}">Send suggestion to admin</button>
+          <button class="btn out sm" data-act="sendsugg" data-org="${a.org}">Schedule review call</button>
+        </div>
+      </div>`).join('')
+      +'<p class="hint">Alerts fire when an OUID underperforms its thresholds. Suggestions are drafted from that org\'s weakest departments and least-active employees, and land in the org admin\'s notification inbox.</p>',
+      'Platform-level monitoring of underperforming organizations')}
+    ${card('Organizations',table(['OUID','Organization','ESG Admin','Employees','E','S','G','Overall'],
+      DATA.orgs.map(o=>`<tr><td>${chip(o.ouid)}</td><td class="b">${o.o}</td><td>${o.admin}</td><td class="num">${o.emp}</td><td class="num">${o.E}</td><td class="num">${o.S}</td><td class="num">${o.G}</td><td style="min-width:140px">${mrow(o.t,o.t<72?'var(--game-acc)':'var(--env)')}</td></tr>`)),
+      'Every company gets a unique OUID — ranked by overall ESG score')}
+    ${card('Sustainability goals — all organizations',table(['Organization','Goal','Owner (admin)','Progress','Deadline','Status'],
+      DATA.allGoals.map(g=>`<tr><td>${chip(g.org)}</td><td class="b">${g.g}</td><td>${g.own}</td><td style="min-width:140px">${mrow(g.p,g.p<40?'var(--game-acc)':'var(--env)')}</td><td class="mut">${g.due}</td><td>${pill(...g.s)}</td></tr>`))
+      +'<p class="hint">🔭 Every org admin\'s goals in one place — sorted by progress. “Nova Foods · Zero-landfill packaging” needs intervention at 31%.</p>',
+      'Aggregated from each organization\'s Environmental Goals')}`;
+  }
   if(persona==='employee'){
     const m=DATA.me;
     return `
@@ -617,7 +793,7 @@ V.dashboard=()=>{
     ${kpi('Governance',s.G,'var(--gov)',['up','2 pts vs last qtr'],undefined,DATA.trend.G)}
     ${kpi('Overall ESG',s.overall,'var(--ink)',['up','3 pts vs last qtr'],undefined,overallTrend())}
   </div>
-  ${card('ESG performance — 12 months',trendChart(),`Weighted E ${s.weights.E}% · S ${s.weights.S}% · G ${s.weights.G}% (configurable) — hover for monthly detail, click legend to isolate a pillar`)}
+  ${card('ESG performance — 12 months',trendChart(),`Pick a series to watch — thin line is the monthly actual, bold line is the smoothed momentum, the grey ribbon is its typical variability`)}
   <div class="split">
     ${card('Department scores',table(['Department','E','S','G','Total'],DATA.deptScores.map(d=>`<tr><td class="b">${d.d}</td><td class="num">${d.E}</td><td class="num">${d.S}</td><td class="num">${d.G}</td><td style="min-width:130px">${mrow(d.t,d.t<70?'var(--game-acc)':'var(--env)')}</td></tr>`)),'Ranked by total score — feeds the Overall ESG Score')}
     ${card('Recent activity',`<ul class="alist">${DATA.activity.map(a=>`<li><span class="aico" style="background:var(--${a.c})">${a.i}</span><span>${a.t}</span><time>${a.w}</time></li>`).join('')}</ul>`)}
@@ -629,7 +805,16 @@ V.dashboard=()=>{
 };
 
 /* ---- Environmental ---- */
-V.environmental=(sub)=>({transactions,goals,envdash:envDash}[sub]||transactions)();
+V.environmental=(sub)=>({transactions,goals,products:skuView,envdash:envDash}[sub]||transactions)();
+const skuView=()=>card('Embodied CO₂e per unit — 12 months',skuChart(),'Watch one SKU or compare several — toggles isolate the series')
+  +card('Product ESG profiles — per SKU',`
+  ${persona==='admin'?'<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn pri sm">+ New profile</button></div>':''}
+  ${table(['SKU','Product','Embodied CO₂e','ESG weightage','Recyclable','Rating'],
+    DATA.skus.map(s=>`<tr><td class="mono">${s.sku}</td><td class="b">${s.p}</td><td class="num">${s.co2}</td>
+      <td>${s.w?pill(s.w,'p-env'):'<span class="mut">— default 1.0×</span>'}</td>
+      <td style="min-width:120px">${mrow(s.rec)}</td><td class="b">${s.r}</td></tr>`))}
+  <p class="hint">✦ <b>ESG weightage is optional per SKU</b> — when set, it skews that product's contribution to carbon roll-ups and the product ESG rating (e.g. 2.0× for hard-to-abate components). Unset SKUs default to 1.0×.</p>`,
+  'ESG information linked to products — feeds purchase & manufacturing carbon transactions');
 const transactions=()=>`
   ${card('Carbon Transactions',`
     <div class="filters" style="margin-bottom:13px">
@@ -637,7 +822,7 @@ const transactions=()=>`
     </div>
     ${table(['Ref','Source record','Department','Scope','Quantity','Emission factor','CO₂e','Date'],
       DATA.carbonTx.map(t=>`<tr><td class="mono">${t.ref}</td><td class="b">${t.src}</td><td>${t.dept}</td><td>${chip('Scope '+t.scope)}</td><td class="num">${t.qty}</td><td class="mut">${t.f}</td><td class="b num">${t.co2}</td><td class="mut">${t.date}</td></tr>`))}
-    <p class="hint">✦ Auto Emission Calculation is <b>ON</b> — rows are generated from linked ERP records × emission factor; no manual entry.</p>`,
+    <p class="hint">✦ Auto Emission Calculation is <b>ON</b> — rows are generated from linked ERP records × emission factor; no manual entry. Factors are configured in <a href="#/settings/factors" style="color:var(--env);font-weight:600">Settings → Emission Factors</a>.</p>`,
     'Every operational record becomes a carbon transaction automatically')}`;
 const goals=()=>`
   <div class="grid g3">
@@ -652,9 +837,9 @@ const goals=()=>`
     'Targets tracked against live carbon transactions')}`;
 const envDash=()=>`
   <div class="grid g3">
-    ${kpi('YTD emissions','184','var(--env)',['down','9% vs last year'],' tCO₂e')}
+    ${kpi('YTD emissions','184','var(--env)',['good','9% vs last year'],' tCO₂e')}
     ${kpi('vs annual target','76','var(--env)',null,'% used')}
-    ${kpi('Intensity','2.1','var(--env)',['down','0.3'],' t / employee')}
+    ${kpi('Intensity','2.1','var(--env)',['good','0.3 t'],' t / employee')}
   </div>
   <div class="split">
     ${card('Monthly emissions (tCO₂e)',barChart(DATA.monthlyCO2)+`<div class="xlbls">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>`)}
@@ -663,6 +848,10 @@ const envDash=()=>`
         <div class="donut" data-c="184 t\nYTD" style="background:conic-gradient(var(--env) 0 25%,var(--soc) 25% 58%,var(--gov) 58% 100%)"></div>
         <div style="flex:1;min-width:180px">${DATA.scopes.map((s,i)=>meterRow(s.n,s.pc,[ 'var(--env)','var(--soc)','var(--gov)'][i])).join('')}</div>
       </div>`)}
+    ${card('Employee commute — public vs private',
+      DATA.commute.map(c=>meterRow(c[0],c[1],['Private vehicle'].includes(c[0])?'var(--game-acc)':'var(--env)')).join('')
+      +`<div class="note env" style="margin-top:6px">🚌 <span><b>52% low-carbon commuting</b> (public + carpool + walk/cycle + EV). Commute is ~12% of Scope 3 — the “Commute Green Week” challenge targets the amber share.</span></div>`,
+      'From voluntary commute survey · updated quarterly')}
   </div>
   ${card('Department carbon tracking',table(['Department','Fleet','Purchase','Mfg','Expense','Total tCO₂e'],
     [['Logistics','38.2','6.1','—','2.4','46.7'],['Manufacturing','4.5','21.9','30.8','1.2','58.4'],['Procurement','—','41.0','—','0.8','41.8'],['Sales','8.9','1.2','—','7.4','17.5']]
@@ -672,7 +861,7 @@ const envDash=()=>`
 V.social=(sub)=>({csr,participation,diversity}[sub]||csr)();
 const csr=()=>`
   ${card('CSR Activities',`
-    <div class="filters" style="margin-bottom:13px"><button class="on">All</button><button>Community</button><button>Health</button><button>Education</button><button>Environment</button></div>
+    <div class="filters" style="margin-bottom:13px"><button class="on">All</button><button>Community</button><button>Health</button><button>Education</button><button>Environment</button><button>Inclusion</button></div>
     <div class="grid gcards">
       ${DATA.csr.map(a=>`<div class="card" style="box-shadow:none">
         <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:6px">${pill(a.cat,'p-soc')}${a.ev?chip('📎 evidence required'):''}</div>
@@ -700,12 +889,18 @@ const participation=()=>persona==='employee'
     'CSR participation queue — points are awarded on approval');
 const diversity=()=>`
   <div class="split">
-    ${card('Diversity metrics',DATA.diversity.map(d=>meterRow(d[0],d[1],'var(--soc)')).join(''))}
-    ${card('Mandatory training completion by department',DATA.training.map(t=>meterRow(t[0],t[1],t[1]<75?'var(--game-acc)':'var(--soc)')).join(''),'Amber = below the 75% threshold')}
-  </div>`;
+    ${card('Representation',DATA.repr.map(d=>meterRow(d[0],d[1],'var(--soc)')).join('')
+      +'<p class="hint">🔒 Sensitive attributes are voluntary self-identification, stored aggregated & anonymised only.</p>')}
+    ${card('Cultural & generational diversity',`
+      <div class="grid g4" style="margin-bottom:14px">
+        ${DATA.culture.stats.map(s=>`<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px"><p class="mut" style="font-size:11.5px">${s[0]}</p><p class="b num" style="font-size:20px;color:var(--soc)">${s[1]}</p></div>`).join('')}
+      </div>
+      ${DATA.culture.gens.map(g=>meterRow(g[0],g[1],'var(--soc)')).join('')}`)}
+  </div>
+  ${card('Mandatory training completion by department',DATA.training.map(t=>meterRow(t[0],t[1],t[1]<75?'var(--game-acc)':'var(--soc)')).join(''),'Amber = below the 75% threshold')}`;
 
 /* ---- Governance ---- */
-V.governance=(sub)=>({policies,acks,audits,issues}[sub]||policies)();
+V.governance=(sub)=>({policies,acks,audits,issues,certs:certsView}[sub]||policies)();
 const policies=()=>card('ESG Policies',`
   ${persona==='admin'?'<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn gov sm">+ New policy</button></div>':''}
   ${table(['Policy','Version','Updated','Acknowledged','',''],
@@ -718,9 +913,20 @@ const acks=()=>persona==='employee'
       .map(r=>`<tr><td class="b">${r[0]}</td><td>${r[1]}</td><td class="mono">${r[2]}</td><td>${r[3]||pill('Pending reminder sent','p-game')}</td></tr>`)),'Tracked per employee per policy version');
 const audits=()=>card('Audits',`
   ${persona==='admin'?'<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn gov sm">+ New audit</button></div>':''}
-  ${table(['Audit','Department','Auditor','Date','Linked issues','Status'],
-    DATA.audits.map(a=>`<tr><td class="b">${a.t}</td><td>${a.dept}</td><td>${a.by}</td><td class="mut">${a.date}</td><td><a href="#/governance/issues" style="color:var(--gov);font-weight:600">${a.issues} issue${a.issues>1?'s':''} →</a></td><td>${pill(...a.s)}</td></tr>`))}`,
-  'Each audit can raise linked compliance issues');
+  ${table(['Audit','Type','Department','Auditor','Date','Linked issues','Status'],
+    DATA.audits.map(a=>`<tr><td class="b">${a.t}</td><td>${chip(a.type)}</td><td>${a.dept}</td><td>${a.by}</td><td class="mut">${a.date}</td><td>${a.issues?`<a href="#/governance/issues" style="color:var(--gov);font-weight:600">${a.issues} issue${a.issues>1?'s':''} →</a>`:'<span class="mut">—</span>'}</td><td>${pill(...a.s)}</td></tr>`))}`,
+  'Internal ESG, security (VAPT), certification and safety audits — each can raise linked compliance issues');
+const certsView=()=>`
+  ${card('Certifications & security posture',`<div class="grid gcards">
+    ${DATA.certs.map(c=>`<div class="card" style="box-shadow:none">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><span style="font-size:24px">${c.i}</span>${pill(...c.s)}</div>
+      <b style="display:block;margin:8px 0 4px;font-size:13.5px">${c.n}</b>
+      <p class="mut" style="font-size:12px">${c.until}</p>
+      <p class="mut" style="font-size:12px;margin-top:2px">⏭ ${c.next}</p>
+    </div>`).join('')}
+  </div>
+  <p class="hint">Certification expiries and VAPT retests feed the same reminder & notification pipeline as policy acknowledgements.</p>`,
+  'ISO · SOC 2 · VAPT — evidence for the Governance score')}`;
 const issues=()=>card('Compliance Issues',`
   ${table(['Issue','From audit','Severity','Owner','Due date','Status'],
     DATA.issues.map(i=>`<tr class="${i.s==='Overdue'?'overdue':''}"><td class="b">${i.i}</td><td class="mut">${i.audit}</td><td>${sev(i.sev)}</td><td>${i.own}</td><td class="${i.s==='Overdue'?'b':'mut'}">${i.due}</td><td>${statusPill(i.s)}</td></tr>`))}
@@ -736,7 +942,7 @@ const challenges=()=>card('Challenge lifecycle',`
     ${Object.entries(DATA.challenges).map(([col,items])=>`
       <div class="kcol"><h3><span class="dot" style="background:${KCOL[col]}"></span>${col}<span class="n">${items.length}</span></h3>
         ${items.map(c=>`<div class="kcard"><p class="t">${c.t}</p>
-          <div class="meta">${pill(c.xp+' XP','p-game')}${chip(c.d)}${c.ev?chip('📎 evidence'):''}</div>
+          <div class="meta">${pill(c.cat,'p-game')}${pill(c.xp+' XP','p-mut')}${chip(c.d)}${c.ev?chip('📎 evidence'):''}</div>
           <p class="mut" style="font-size:11.5px;margin-bottom:8px">Deadline ${c.due}</p>
           ${col==='Active'?`<button class="btn game sm" data-act="joinch">Join</button>`:''}
           ${persona==='admin'&&col==='Draft'?`<button class="btn out sm" data-act="activate">Activate →</button>`:''}
@@ -746,11 +952,21 @@ const challenges=()=>card('Challenge lifecycle',`
   </div>
   <p class="hint">Lifecycle: Draft → Active → Under Review → Completed · Archive from any state. Swipe/scroll horizontally on mobile.</p>`,
   'Full status flow with actions at each stage');
-const mine=()=>card('My challenge participation',
-  table(['Challenge','Progress','Proof','Status','XP awarded'],
-    DATA.myChallenges.map(c=>`<tr><td class="b">${c.c}</td><td style="min-width:150px">${mrow(c.p,'var(--game-acc)')}</td><td>${c.proof?`<span class="mono">${c.proof}</span>`:'<button class="btn out sm" data-act="upload">Upload proof</button>'}</td><td>${statusPill(c.s)}</td><td class="b num" style="color:var(--env)">${c.xp}</td></tr>`))
-  +'<p class="hint">XP lands the moment an admin approves — and badges auto-award when unlock rules are met.</p>',
-  'Progress, proof and XP for challenges you joined');
+const mine=()=>persona==='admin'
+  ? card('Challenge participation — approvals',
+      table(['Employee','Challenge','Progress','Proof','XP','Status','Decision'],
+        DATA.chQueue.map(q=>{const noProof=!q.proof;
+          return `<tr><td class="b">${q.e}</td><td>${q.c}</td><td style="min-width:140px">${mrow(q.p,'var(--game-acc)')}</td>
+            <td>${q.proof?`<span class="mono">${q.proof}</span>`:pill('proof missing','p-dgr')}</td>
+            <td class="num">${q.xp}</td><td>${statusPill(q.s)}</td>
+            <td>${q.s==='Pending'?`<button class="btn pri sm" data-act="approve" ${noProof?'disabled title="Evidence required — proof must be attached before approving"':''}>Approve</button> <button class="btn out sm" data-act="reject">Reject</button>`:'—'}</td></tr>`;}))
+      +'<p class="hint">On approval, XP is awarded and Badge Auto-Award checks the employee\'s unlock rules immediately.</p>',
+      'Proof review for challenges at 100% progress')
+  : card('My challenge participation',
+      table(['Challenge','Progress','Proof','Status','XP awarded'],
+        DATA.myChallenges.map(c=>`<tr><td class="b">${c.c}</td><td style="min-width:150px">${mrow(c.p,'var(--game-acc)')}</td><td>${c.proof?`<span class="mono">${c.proof}</span>`:'<button class="btn out sm" data-act="upload">Upload proof</button>'}</td><td>${statusPill(c.s)}</td><td class="b num" style="color:var(--env)">${c.xp}</td></tr>`))
+      +'<p class="hint">XP lands the moment an admin approves — and badges auto-award when unlock rules are met.</p>',
+      'Progress, proof and XP for challenges you joined');
 const leaderboard=()=>`
   ${card('Leaderboard',`
     <div class="filters" style="margin-bottom:14px"><button class="on" data-lb="emp">Employees</button><button data-lb="dept">Departments</button><span class="chip" style="margin-left:auto">This quarter</span></div>
@@ -761,26 +977,29 @@ const leaderboard=()=>`
     'Top performers — switch between employee and department rankings')}`;
 const badges=()=>card('Badges',`
   <div class="grid gcards">
-    ${DATA.badges.map(b=>`<div class="badge-card ${b.got?'':'locked'}"><span class="bico">${b.got?b.i:'🔒'}</span><span><b>${b.n}</b><span class="rule">${b.r}</span>${b.got?pill('Earned','p-env'):pill('Locked','p-mut')}</span></div>`).join('')}
+    ${DATA.badges.map(b=>`<div class="badge-card ${b.got?'':'locked'}"><span class="bico">${b.got?b.i:'🔒'}</span><span><b>${b.n}</b><span class="rule">${b.ds}</span><span class="rule" style="color:var(--game)">Unlock: ${b.r}</span><span style="display:inline-block;margin-top:4px">${b.got?pill('Earned','p-env'):pill('Locked','p-mut')}</span></span></div>`).join('')}
   </div>
   <p class="hint">✦ Badge Auto-Award is <b>ON</b> — a badge is assigned the moment your XP or completed-challenge count satisfies its unlock rule.</p>`,
   'Unlock rules are visible so employees know what to aim for');
 const rewards=()=>`
   <div class="note env" style="align-items:center">💰 <span><b>Your balance: ${DATA.me.points} pts</b> — redeeming deducts points instantly, subject to stock.</span></div>
-  ${card('Rewards catalog',`<div class="grid gcards">
+  ${card('Rewards catalog',`
+  <div class="filters" style="margin-bottom:13px"><button class="on">All</button>${[...new Set(DATA.rewards.map(r=>r.cat))].map(c=>`<button>${c}</button>`).join('')}</div>
+  <div class="grid gcards">
     ${DATA.rewards.map(r=>{
       const out=r.stock===0, poor=DATA.me.points<r.cost;
       return `<div class="card" style="box-shadow:none;display:flex;flex-direction:column">
-        <div style="font-size:26px">${r.i}</div>
+        <div style="display:flex;justify-content:space-between;align-items:start"><span style="font-size:26px">${r.i}</span>${chip(r.cat)}</div>
         <b style="margin:7px 0 3px;font-size:14px">${r.n}</b>
-        <span class="mut" style="font-size:12px">${out?pill('Out of stock','p-dgr'):r.stock+' in stock'}</span>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
-          ${pill(r.cost+' pts','p-game')}
+        <span class="mut" style="font-size:12px">${out?pill('Out of stock','p-dgr'):r.stock<5?pill('Only '+r.stock+' left','p-game'):r.stock+' in stock'}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:12px">
+          ${pill(r.cost.toLocaleString()+' pts','p-game')}
           <button class="btn pri sm" data-act="redeem" data-cost="${r.cost}" ${out||poor?'disabled':''} title="${out?'Out of stock':poor?'Not enough points':''}">Redeem</button>
         </div>
-        ${!out&&poor?`<p style="font-size:11px;color:var(--danger);margin-top:6px">Needs ${r.cost-DATA.me.points} more pts</p>`:''}
+        ${!out&&poor?`<p style="font-size:11px;color:var(--danger);margin-top:6px">Needs ${(r.cost-DATA.me.points).toLocaleString()} more pts</p>`:''}
       </div>`}).join('')}
-  </div>`)}`;
+  </div>
+  <p class="hint">Redemption is atomic in the real build — stock check + point deduction happen in one server-side transaction, so no negative balances under concurrent redeems.</p>`)}`;
 
 /* ---- Reports ---- */
 V.reports=(sub)=>({summary:rsummary,environmental:renv,social:rsoc,governance:rgov,builder}[sub]||rsummary)();
@@ -836,7 +1055,13 @@ const config=()=>`
       +toggle('Badge Auto-Award','Assign badges the moment an unlock rule is satisfied',true)
       +toggle('Overdue issue flagging','Daily scheduler flags Open issues past their due date',true),
       'Core platform rules — enforced server-side')}
-  </div>`;
+  </div>
+  ${card('Alert rules <span class="pill p-gov" style="vertical-align:2px;margin-left:6px">feeds Super Admin alerts</span>',
+    toggle('Overall ESG below <input value="75" style="width:44px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;text-align:center"> for <input value="2" style="width:34px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;text-align:center"> consecutive months','Raises a High-severity alert on this OUID',true)
+    +toggle('Any pillar drops more than <input value="4" style="width:34px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;text-align:center"> pts in a quarter','Raises a Medium-severity alert with the pillar named',true)
+    +toggle('Department score below <input value="60" style="width:44px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;text-align:center">','Flags the department as the intervention target',true)
+    +toggle('Employees inactive for <input value="90" style="width:44px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;text-align:center"> days','Lists them as suggested engagement targets',false),
+    'You define what counts as underperforming for your organization — Super Admin only switches alerting on or off')}`;
 const notifications=()=>card('Notification settings',
   toggle('New compliance issue raised','In-app + email to the issue owner',true)
   +toggle('CSR / challenge approval decisions','Notify the employee on approve or reject',true)
@@ -871,6 +1096,7 @@ function renderTabs(active){
 function route(){
   const active=parseHash();
   renderNav(active);
+  $('#sideFoot').textContent=persona==='super'?`Platform · ${DATA.orgs.length} organizations`:'Acme Corp · OUID OU-1001';
   $('#view').innerHTML=renderTabs(active)+V[active.mod.id](active.sub);
   if(active.mod.id==='settings'&&active.sub==='config') wireWeights();
   $('#sidebar').classList.remove('open');$('#backdrop').classList.remove('show');
@@ -911,10 +1137,13 @@ function saveGoal(){
 
 /* =================== GLOBAL EVENTS =================== */
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-act],[data-toggle],[data-lb],[data-sr],[data-cm],.filters button');
+  if(e.target.matches('input,select')) return;
+  const t=e.target.closest('[data-act],[data-toggle],[data-lb],[data-sr],[data-cm],[data-ss],[data-sku],.filters button');
   if(!t) return;
   if(t.dataset.cm){chartState.mode=t.dataset.cm;return route();}
+  if(t.dataset.ss){chartState.series=t.dataset.ss;return route();}
   if(t.dataset.sr){chartState[t.dataset.sr]=!chartState[t.dataset.sr];return route();}
+  if(t.dataset.sku){skuState[t.dataset.sku]=skuState[t.dataset.sku]===false;return route();}
   if(t.dataset.act){
     const a=t.dataset.act;
     if(a==='newgoal') return openGoalModal();
@@ -933,6 +1162,7 @@ document.addEventListener('click',e=>{
       ['2026-07-05','Manufacturing','Social','CSR participation','+3'],['2026-07-04','Corporate','Governance','Policy ack','92%']]
       .map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`)));return;}
     if(a==='export'){return toast('⬇ Export queued — lands in your downloads (demo)');}
+    if(a==='sendsugg'){return toast(`💡 Sent to ${t.dataset.org}’s ESG admin — delivered to their notification inbox & logged`);}
   }
   if(t.dataset.lb!==undefined&&t.dataset.lb){ /* leaderboard toggle */
     t.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));t.classList.add('on');
@@ -957,9 +1187,9 @@ $('#persona').addEventListener('click',e=>{
   const b=e.target.closest('button[data-p]');if(!b)return;
   persona=b.dataset.p;
   $('#persona').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-  $('#avatar').textContent=persona==='admin'?'AR':'👤';
+  $('#avatar').textContent={admin:'AR',employee:'👤',super:'SA'}[persona];
   location.hash='#/dashboard';route();
-  toast(persona==='admin'?'Viewing as Admin — full navigation':'Viewing as Employee — trimmed navigation');
+  toast({admin:'Viewing as Admin — full navigation',employee:'Viewing as Employee — trimmed navigation',super:'Viewing as Super Admin (Odoo) — all organizations'}[persona]);
 });
 window.addEventListener('hashchange',route);
 route();
