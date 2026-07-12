@@ -251,7 +251,7 @@ function SuperDashboard({ data, reload }) {
         <p>All organizations — ESG posture, goal delivery and live interventions.</p>
       </div>
 
-      <div className="grid g4">
+      <div className="grid g4 big">
         <KpiCard label="Organizations" value={k.organizations} accent="var(--primary)" />
         <KpiCard label="Avg ESG score" value={k.avg_esg} accent="var(--ink)" suffix=" / 100" />
         <KpiCard label="Goals on track" value={k.goals_on_track} accent="var(--ok)" suffix={` of ${k.goals_total}`} />

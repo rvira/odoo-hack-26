@@ -8,6 +8,7 @@ import Pill, { Chip } from '../components/Pill.jsx';
 import Modal, { Field } from '../components/Modal.jsx';
 import Toggle from '../components/Toggle.jsx';
 import { useToast } from '../components/Toast.jsx';
+import { SCOPE_LABEL, SCOPE_KEY } from './Environmental.jsx';
 
 const TABS = [
   ['departments', 'Departments'],
@@ -265,13 +266,14 @@ function Factors() {
             key: f.id,
             cells: [
               <span className="b">{f.name}</span>,
-              <Chip>Scope {f.scope}</Chip>,
+              <Chip>{SCOPE_LABEL[f.scope]}</Chip>,
               f.unit,
               <span className="b num">{f.kgco2e_per_unit} kg CO₂e/{f.unit}</span>,
               <span className="mut">{f.source}</span>,
             ],
           }))} />
       )}
+      <p className="hint">{SCOPE_KEY}</p>
       {showNew && <NewFactorModal onClose={() => setShowNew(false)} onSaved={() => { setShowNew(false); reload(); }} />}
     </section>
   );

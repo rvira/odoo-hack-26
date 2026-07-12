@@ -56,6 +56,23 @@ def health():
     return {"status": "ok"}
 
 
+def _add_missing_columns():
+    """create_all never ALTERs existing tables — add columns introduced after
+    a database was first created. Works on SQLite and CockroachDB alike."""
+    from sqlalchemy import inspect, text
+    inspector = inspect(engine)
+    wanted = {
+        "participations": ("proof_method", "VARCHAR(10)"),
+        "challenge_participations": ("proof_method", "VARCHAR(10)"),
+    }
+    with engine.begin() as conn:
+        for table, (column, ddl_type) in wanted.items():
+            existing = {c["name"] for c in inspector.get_columns(table)}
+            if column not in existing:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type}"))
+                logger.info("migrated: %s.%s added", table, column)
+
+
 @app.on_event("startup")
 def startup():
     """The server never fabricates data — it only reads/writes the database.
@@ -63,6 +80,7 @@ def startup():
         python -m ecosphere_api.seed
     """
     Base.metadata.create_all(engine)
+    _add_missing_columns()
     db = SessionLocal()
     try:
         if db.query(models.User).first() is None:

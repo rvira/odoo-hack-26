@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -87,6 +87,7 @@ def list_participations(user: models.User = Depends(security.require_org_user), 
         row = {
             "id": p.id, "activity": p.activity.name,
             "completed": str(p.completed_on), "proof": p.proof_name,
+            "proof_method": p.proof_method,
             "points": p.points_earned or p.activity.points, "status": p.status,
         }
         if user.role == "admin":
@@ -109,14 +110,18 @@ async def upload_proof(
     pid: int,
     request: Request,
     file: UploadFile = File(...),
+    method: str = Form("upload"),
     user: models.User = Depends(security.current_user),
     db: Session = Depends(get_db),
 ):
     security.write_limiter.check(security.client_ip(request))
+    if method not in ("upload", "capture"):
+        raise HTTPException(422, "method must be 'upload' or 'capture'")
     p = _get_own_participation(db, pid, user)
     if p.status != "pending":
         raise HTTPException(409, "Only pending participations accept proof")
     p.proof_name, p.proof_stored = await services.store_proof(file)
+    p.proof_method = method
     db.commit()
     return {"proof": p.proof_name}
 

@@ -192,6 +192,7 @@ class Participation(Base):
     activity_id: Mapped[int] = mapped_column(ForeignKey("csr_activities.id"), index=True)
     proof_name: Mapped[str | None] = mapped_column(String(160))
     proof_stored: Mapped[str | None] = mapped_column(String(80))
+    proof_method: Mapped[str | None] = mapped_column(String(10))  # upload|capture
     status: Mapped[str] = mapped_column(String(12), default="pending")  # pending|approved|rejected
     points_earned: Mapped[int] = mapped_column(Integer, default=0)
     completed_on: Mapped[date] = mapped_column(Date, default=date.today)
@@ -227,6 +228,7 @@ class ChallengeParticipation(Base):
     progress: Mapped[int] = mapped_column(Integer, default=0)
     proof_name: Mapped[str | None] = mapped_column(String(160))
     proof_stored: Mapped[str | None] = mapped_column(String(80))
+    proof_method: Mapped[str | None] = mapped_column(String(10))  # upload|capture
     status: Mapped[str] = mapped_column(String(16), default="in_progress")
     xp_awarded: Mapped[int] = mapped_column(Integer, default=0)
     decided_on: Mapped[date | None] = mapped_column(Date)

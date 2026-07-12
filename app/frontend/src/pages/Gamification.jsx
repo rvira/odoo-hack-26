@@ -36,11 +36,16 @@ const STATE_SLUG = {
   Completed: 'completed', Archived: 'archived',
 };
 
-/** Admin-only create form — server (schemas.ChallengeIn) revalidates everything. */
-function NewChallengeModal({ onClose, onSaved }) {
+/** Admin-only create/edit form — pass `challenge` to edit a Draft.
+ *  The server (schemas.ChallengeIn) revalidates everything either way. */
+function ChallengeModal({ challenge, onClose, onSaved }) {
   const toast = useToast();
   const { data: categories } = useApi('/categories');
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(challenge ? {
+    title: challenge.title, category_id: String(challenge.category_id),
+    xp: String(challenge.xp), difficulty: challenge.difficulty.toLowerCase(),
+    deadline: challenge.deadline, evidence_required: challenge.evidence_required,
+  } : {
     title: '', category_id: '', xp: '100', difficulty: 'medium', deadline: '', evidence_required: false,
   });
   const [serverError, setServerError] = useState('');
@@ -52,8 +57,8 @@ function NewChallengeModal({ onClose, onSaved }) {
     setServerError('');
     setBusy(true);
     try {
-      await api('/challenges', {
-        method: 'POST',
+      await api(challenge ? `/challenges/${challenge.id}` : '/challenges', {
+        method: challenge ? 'PUT' : 'POST',
         body: {
           title: form.title.trim(),
           category_id: Number(form.category_id),
@@ -63,7 +68,7 @@ function NewChallengeModal({ onClose, onSaved }) {
           evidence_required: form.evidence_required,
         },
       });
-      toast('✅ Challenge created in Draft');
+      toast(challenge ? '✅ Challenge updated' : '✅ Challenge created in Draft');
       onSaved();
     } catch (err) {
       setServerError(err.message);
@@ -73,11 +78,14 @@ function NewChallengeModal({ onClose, onSaved }) {
   };
 
   return (
-    <Modal title="New challenge" sub="Created in Draft — activate it from the board when it's ready."
+    <Modal title={challenge ? 'Edit challenge' : 'New challenge'}
+      sub={challenge ? 'Drafts stay editable until you activate them.' : 'Created in Draft — activate it from the board when it\'s ready.'}
       onClose={onClose} serverError={serverError}
       footer={<>
         <button className="btn out" onClick={onClose}>Cancel</button>
-        <button className="btn game" onClick={save} disabled={busy}>{busy ? 'Creating…' : 'Create challenge'}</button>
+        <button className="btn game" onClick={save} disabled={busy}>
+          {busy ? 'Saving…' : challenge ? 'Save changes' : 'Create challenge'}
+        </button>
       </>}>
       <Field label="Title *">
         <input value={form.title} onChange={set('title')} placeholder="e.g. Zero Waste Week" maxLength={160} />
@@ -199,6 +207,7 @@ function Challenges() {
   const [busyId, setBusyId] = useState(null);
   const [selId, setSelId] = useState(null);
   const [showNew, setShowNew] = useState(false);
+  const [editing, setEditing] = useState(null);
 
   const join = async (id) => {
     setBusyId(id);
@@ -265,8 +274,12 @@ function Challenges() {
                   onClick={(e) => { e.stopPropagation(); join(c.id); }}>Join</button>
           )}
           {isAdmin && name === 'Draft' && (
-            <button className="btn out sm" disabled={busyId === c.id}
-              onClick={(e) => { e.stopPropagation(); transition(c.id, 'active', 'Challenge moved: Draft → Active'); }}>Activate →</button>
+            <span style={{ display: 'inline-flex', gap: 6 }}>
+              <button className="btn out sm" disabled={busyId === c.id}
+                onClick={(e) => { e.stopPropagation(); setEditing(c); }}>Edit</button>
+              <button className="btn out sm" disabled={busyId === c.id}
+                onClick={(e) => { e.stopPropagation(); transition(c.id, 'active', 'Challenge moved: Draft → Active'); }}>Activate →</button>
+            </span>
           )}
           {isAdmin && name === 'Under Review' && (
             <button className="btn pri sm" disabled={busyId === c.id}
@@ -312,9 +325,9 @@ function Challenges() {
           onJoin={join} onClose={() => setSelId(null)}
           onChanged={() => { reload(); reloadParts(); }} />
       )}
-      {showNew && (
-        <NewChallengeModal onClose={() => setShowNew(false)}
-          onSaved={() => { setShowNew(false); reload(); }} />
+      {(showNew || editing) && (
+        <ChallengeModal challenge={editing} onClose={() => { setShowNew(false); setEditing(null); }}
+          onSaved={() => { setShowNew(false); setEditing(null); reload(); }} />
       )}
     </section>
   );
@@ -420,7 +433,10 @@ function Mine() {
               q.challenge,
               <div style={{ minWidth: 140 }}><MeterRow value={q.progress} accent="var(--game-acc)" /></div>,
               q.proof
-                ? <ProofLink path={`/challenge-participations/${q.id}/proof-file`} name={q.proof} />
+                ? <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                    <ProofLink path={`/challenge-participations/${q.id}/proof-file`} name={q.proof} />
+                    {q.proof_method === 'capture' && <Chip>📷 captured</Chip>}
+                  </span>
                 : <Pill tone="dgr">proof missing</Pill>,
               <span className="num">{q.xp}</span>,
               <StatusPill status={q.status} />,

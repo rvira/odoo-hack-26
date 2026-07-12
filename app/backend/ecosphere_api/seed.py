@@ -16,6 +16,8 @@ import base64
 import os
 import random
 import secrets
+import struct
+import zlib
 from datetime import date, datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -25,11 +27,56 @@ from .database import DATA_DIR, UPLOAD_DIR
 
 rng = random.Random(42)  # deterministic demo data — NOT security randomness
 
-# a real (1×1) PNG so seeded proof rows are viewable like real uploads
+# a real (1×1) PNG so bulk historic proof rows are viewable like real uploads
 SEED_PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
     "+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 )
+
+
+def _png(width: int, height: int, pixel) -> bytes:
+    """Minimal PNG encoder — pixel(x, y) -> (r, g, b). Keeps the demo images
+    recognizable without adding an imaging dependency."""
+    raw = b"".join(
+        b"\x00" + bytes(v for x in range(width) for v in pixel(x, y))
+        for y in range(height)
+    )
+
+    def chunk(tag: bytes, data: bytes) -> bytes:
+        c = tag + data
+        return struct.pack(">I", len(data)) + c + struct.pack(">I", zlib.crc32(c))
+
+    return (b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 6))
+            + chunk(b"IEND", b""))
+
+
+def _demo_photo(kind: str) -> bytes:
+    """Two recognizable demo proofs: a plantation photo worth approving, and a
+    dark unusable shot worth rejecting."""
+    if kind == "good":
+        trees = [(90, 300), (210, 320), (330, 295), (460, 315), (560, 300)]
+
+        def px(x, y):
+            if y > 280:  # grass
+                return (52, 130 + (x * 7 + y * 13) % 25, 60)
+            if (x - 540) ** 2 + (y - 60) ** 2 < 900:  # sun
+                return (255, 214, 90)
+            for tx, ty in trees:
+                if abs(x - tx) < 8 and ty - 60 < y <= 280:  # trunk
+                    return (101, 67, 33)
+                if (x - tx) ** 2 + (y - (ty - 80)) ** 2 < 1600:  # canopy
+                    return (34, 120 + (x * 5 + y * 3) % 30, 44)
+            return (135, 180, 235 - y // 4)  # sky
+        return _png(640, 420, px)
+
+    def px(x, y):  # murky, out-of-focus non-evidence
+        v = 38 + (x * 31 + y * 57) % 47
+        if (x + y * 2) % 200 < 60:
+            v += 25
+        return (v, max(v - 6, 0), max(v - 10, 0))
+    return _png(640, 420, px)
 
 
 def _months_back(n: int) -> list[tuple[int, int]]:
@@ -75,7 +122,7 @@ def hr_attrs(i: int) -> dict:
 
 
 def _demo_password() -> str:
-    pw = os.environ.get("ECOSPHERE_DEMO_PASSWORD")
+    pw = os.environ.get("ECOSPHERE_DEMO_PASSWORD", "12343456Qwerttyu@#$")
     if not pw:
         pw = secrets.token_urlsafe(9)
         cred_file = DATA_DIR / "DEMO_CREDENTIALS.txt"
@@ -176,6 +223,8 @@ def seed(db: Session) -> None:
         return
 
     (UPLOAD_DIR / "seeded.png").write_bytes(SEED_PNG)
+    (UPLOAD_DIR / "demo-good.png").write_bytes(_demo_photo("good"))
+    (UPLOAD_DIR / "demo-bad.png").write_bytes(_demo_photo("bad"))
     proof = ("photo.png", "seeded.png")
     pwd_hash = security.hash_password(_demo_password())
 
@@ -392,9 +441,9 @@ def seed(db: Session) -> None:
     karan = next(u for u in users if u.email == "karan@acme.com")
     sana = next(u for u in users if u.email == "sana@acme.com")
     aditi = next(u for u in users if u.email == "aditi@acme.com")
-    db.add(models.ChallengeParticipation(  # has proof → approvable
+    db.add(models.ChallengeParticipation(  # real proof → approvable
         user_id=karan.id, challenge_id=recycle.id, progress=100,
-        proof_name="recycle-log.png", proof_stored="seeded.png",
+        proof_name="recycle-log.png", proof_stored="demo-good.png", proof_method="upload",
         status="under_review"))
     db.add(models.ChallengeParticipation(  # NO proof → approve must be blocked
         user_id=sana.id, challenge_id=sprint.id, progress=100,
@@ -402,10 +451,15 @@ def seed(db: Session) -> None:
     db.add(models.ChallengeParticipation(
         user_id=aditi.id, challenge_id=sprint.id, progress=65,
         status="in_progress"))
+    # CSR demo pair: a clear plantation photo to APPROVE …
     db.add(models.Participation(user_id=aditi.id, activity_id=activities[0].id,
-                                proof_name="plantation.png", proof_stored="seeded.png",
+                                proof_name="plantation-photo.png", proof_stored="demo-good.png",
+                                proof_method="capture",
                                 status="pending", completed_on=TODAY - timedelta(days=4)))
+    # … and an unusable blurry shot to REJECT
     db.add(models.Participation(user_id=karan.id, activity_id=activities[2].id,
+                                proof_name="blurry-shot.png", proof_stored="demo-bad.png",
+                                proof_method="upload",
                                 status="pending", completed_on=TODAY - timedelta(days=5)))
 
     # ---- policies (platform-wide) + Acme acks ----

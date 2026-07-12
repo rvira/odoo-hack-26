@@ -29,6 +29,10 @@ const SOURCES = [
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
+export const SCOPE_LABEL = { 1: 'Scope 1 · Direct', 2: 'Scope 2 · Energy', 3: 'Scope 3 · Value chain' };
+export const SCOPE_KEY = 'Key — Scope 1 · Direct: fuel we burn ourselves (fleet, machinery) · '
+  + 'Scope 2 · Energy: purchased electricity · Scope 3 · Value chain: suppliers, purchases & travel.';
+
 // avoid "Manufacturing · Manufacturing order…" when the description already names the source
 const sourceLabel = (t) => (t.source_desc.toLowerCase().startsWith(t.source_type)
   ? t.source_desc
@@ -112,7 +116,7 @@ function NewTransactionModal({ onClose, onSaved }) {
       <div className="grid g2" style={{ gap: 10 }}>
         <Field label="Scope *">
           <select value={form.scope} onChange={set('scope')}>
-            <option value="1">Scope 1</option><option value="2">Scope 2</option><option value="3">Scope 3</option>
+            <option value="1">{SCOPE_LABEL[1]}</option><option value="2">{SCOPE_LABEL[2]}</option><option value="3">{SCOPE_LABEL[3]}</option>
           </select>
         </Field>
         <Field label="Quantity *">
@@ -160,7 +164,7 @@ function Transactions() {
               <span className="mono">{t.ref}</span>,
               <span className="b">{sourceLabel(t)}</span>,
               t.department,
-              <Chip>Scope {t.scope}</Chip>,
+              <Chip>{SCOPE_LABEL[t.scope]}</Chip>,
               <span className="num">{t.quantity} {t.unit}</span>,
               <span className="mut">{t.factor_display}</span>,
               <span className="b num">{Number(t.kgco2e).toLocaleString()} kg</span>,
@@ -168,6 +172,7 @@ function Transactions() {
             ],
           }))} />
       )}
+      <p className="hint">{SCOPE_KEY}</p>
       {showNew && (
         <NewTransactionModal onClose={() => setShowNew(false)}
           onSaved={() => { setShowNew(false); reload(); }} />

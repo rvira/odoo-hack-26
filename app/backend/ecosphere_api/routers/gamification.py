@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -33,6 +33,7 @@ def list_challenges(user: models.User = Depends(security.current_user), db: Sess
     for c in db.query(models.Challenge).order_by(models.Challenge.deadline):
         columns[STATE_LABEL[c.state]].append({
             "id": c.id, "title": c.title, "category": c.category.name,
+            "category_id": c.category_id,
             "xp": c.xp, "difficulty": c.difficulty.capitalize(),
             "deadline": str(c.deadline), "evidence_required": c.evidence_required,
             "joined_by_me": c.id in joined,
@@ -59,6 +60,29 @@ def create_challenge(
     db.add(c)
     db.commit()
     return {"id": c.id, "state": STATE_LABEL[c.state]}
+
+
+@router.put("/challenges/{challenge_id}")
+def update_challenge(
+    challenge_id: int,
+    body: schemas.ChallengeIn,
+    request: Request,
+    _: models.User = Depends(security.require_admin),
+    db: Session = Depends(get_db),
+):
+    security.write_limiter.check(security.client_ip(request))
+    c = db.get(models.Challenge, challenge_id)
+    if c is None:
+        raise HTTPException(404, "Challenge not found")
+    if c.state != "draft":
+        raise HTTPException(409, "Only Draft challenges can be edited")
+    cat = db.get(models.Category, body.category_id)
+    if cat is None or not cat.active or cat.type != "challenge":
+        raise HTTPException(422, "category_id must reference an active challenge category")
+    c.title, c.category_id, c.xp = body.title, body.category_id, body.xp
+    c.difficulty, c.evidence_required, c.deadline = body.difficulty, body.evidence_required, body.deadline
+    db.commit()
+    return {"id": c.id}
 
 
 @router.post("/challenges/{challenge_id}/transition")
@@ -124,7 +148,8 @@ def list_challenge_participations(
     for cp in q.limit(100):
         row = {
             "id": cp.id, "challenge": cp.challenge.title, "progress": cp.progress,
-            "proof": cp.proof_name, "status": cp.status.replace("_", " "),
+            "proof": cp.proof_name, "proof_method": cp.proof_method,
+            "status": cp.status.replace("_", " "),
         }
         if user.role == "admin":
             row["employee"] = cp.user.name
@@ -169,14 +194,18 @@ async def upload_challenge_proof(
     cpid: int,
     request: Request,
     file: UploadFile = File(...),
+    method: str = Form("upload"),
     user: models.User = Depends(security.current_user),
     db: Session = Depends(get_db),
 ):
     security.write_limiter.check(security.client_ip(request))
+    if method not in ("upload", "capture"):
+        raise HTTPException(422, "method must be 'upload' or 'capture'")
     cp = _own_cp(db, cpid, user)
     if cp.status not in ("in_progress", "under_review"):
         raise HTTPException(409, "Participation was already decided")
     cp.proof_name, cp.proof_stored = await services.store_proof(file)
+    cp.proof_method = method
     db.commit()
     return {"proof": cp.proof_name}
 
