@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Owner: P0 (ARCHITECTURE.md §2) - Phase 1.
+
+WILL CONTAIN: ir.sequence records for the three code-carrying models:
+  - ecosphere.carbon.transaction  (e.g. CT/%(year)s/#####)
+  - ecosphere.audit               (e.g. AUD/%(year)s/####)
+  - ecosphere.compliance.issue    (e.g. CI/%(year)s/####)
+(ecosphere.alert gets its sequence in Phase 7 - BONUS §3.4.)
+-->
+<odoo>
+</odoo>
