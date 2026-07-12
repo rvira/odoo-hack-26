@@ -76,7 +76,7 @@ jobs:
       # Scans any manifests/lockfiles in the repo for known CVEs and
       # catches secrets accidentally committed to the tree.
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -110,11 +110,16 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write # comment-summary-in-pr posts on failure
     steps:
       - uses: actions/checkout@v4
 
+      # No moving v4/v5 major tag exists for this action — pin the exact
+      # release commit (Dependabot keeps it bumped).
       - name: Dependency review
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
           comment-summary-in-pr: on-failure
