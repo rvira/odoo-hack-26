@@ -144,6 +144,26 @@ function Builder() {
     }
   };
 
+  // download the previewed rows as CSV; cells starting with =+-@ are quoted
+  // so spreadsheet apps treat them as text, not formulas
+  const download = () => {
+    const guard = (v) => {
+      const s = String(v ?? '').replaceAll('"', '""');
+      return /^[=+\-@]/.test(s) ? `'${s}` : s;
+    };
+    const lines = [
+      ['Date', 'Department', 'Module', 'Metric', 'Value'],
+      ...rows.map((r) => [r.date, r.department, r.module, r.metric, r.value]),
+    ].map((cells) => cells.map((c) => `"${guard(c)}"`).join(','));
+    const url = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ecosphere-custom-report.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('⬇ CSV downloaded');
+  };
+
   return (
     <section className="card">
       <h2>Custom Report Builder</h2>
@@ -169,6 +189,10 @@ function Builder() {
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
         <button className="btn pri sm" disabled={busy} onClick={run}>{busy ? 'Running…' : '▶ Run report'}</button>
+        <button className="btn out sm" disabled={!rows || rows.length === 0} onClick={download}
+          title={!rows ? 'Run the report first' : rows.length === 0 ? 'No rows to download' : undefined}>
+          ⬇ Download CSV
+        </button>
       </div>
       {rows && (
         <div style={{ marginTop: 16 }}>

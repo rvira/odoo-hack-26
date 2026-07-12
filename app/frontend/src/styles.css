@@ -269,9 +269,9 @@ tr.overdue td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
 .modal .foot{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
 .modal .servererr{margin:0 0 12px;padding:9px 12px;border-radius:var(--r);background:var(--danger-soft);border:1px solid var(--danger-line);color:var(--danger-ink);font-size:12.5px}
 
-.toast{position:fixed;left:50%;bottom:22px;z-index:70;transform:translate(-50%,80px);background:var(--side);color:#fff;
+.toast{position:fixed;right:22px;bottom:22px;z-index:70;transform:translateY(80px);background:var(--side);color:#fff;
   padding:11px 18px;border-radius:var(--r);font-size:13.5px;font-weight:500;box-shadow:var(--shadow-pop);transition:transform .25s;max-width:calc(100vw - 32px)}
-.toast.show{transform:translate(-50%,0)}
+.toast.show{transform:translateY(0)}
 
 .note{display:flex;gap:9px;padding:11px 13px;border-radius:var(--r);border:1px solid transparent;font-size:12.5px;line-height:1.45}
 .note.ok,.note.env{background:var(--ok-soft);border-color:var(--ok-line);color:var(--ok-ink)}

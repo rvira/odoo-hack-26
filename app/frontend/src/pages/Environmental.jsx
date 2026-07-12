@@ -29,6 +29,11 @@ const SOURCES = [
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
+// avoid "Manufacturing · Manufacturing order…" when the description already names the source
+const sourceLabel = (t) => (t.source_desc.toLowerCase().startsWith(t.source_type)
+  ? t.source_desc
+  : `${cap(t.source_type)} · ${t.source_desc}`);
+
 /* ---------- Carbon Transactions ---------- */
 
 function NewTransactionModal({ onClose, onSaved }) {
@@ -153,7 +158,7 @@ function Transactions() {
             key: t.id,
             cells: [
               <span className="mono">{t.ref}</span>,
-              <span className="b">{cap(t.source_type)} · {t.source_desc}</span>,
+              <span className="b">{sourceLabel(t)}</span>,
               t.department,
               <Chip>Scope {t.scope}</Chip>,
               <span className="num">{t.quantity} {t.unit}</span>,

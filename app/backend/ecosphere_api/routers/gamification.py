@@ -40,6 +40,27 @@ def list_challenges(user: models.User = Depends(security.current_user), db: Sess
     return {"columns": columns}
 
 
+@router.post("/challenges", status_code=201)
+def create_challenge(
+    body: schemas.ChallengeIn,
+    request: Request,
+    _: models.User = Depends(security.require_admin),
+    db: Session = Depends(get_db),
+):
+    security.write_limiter.check(security.client_ip(request))
+    cat = db.get(models.Category, body.category_id)
+    if cat is None or not cat.active or cat.type != "challenge":
+        raise HTTPException(422, "category_id must reference an active challenge category")
+    c = models.Challenge(
+        title=body.title, category_id=body.category_id, xp=body.xp,
+        difficulty=body.difficulty, evidence_required=body.evidence_required,
+        deadline=body.deadline,
+    )
+    db.add(c)
+    db.commit()
+    return {"id": c.id, "state": STATE_LABEL[c.state]}
+
+
 @router.post("/challenges/{challenge_id}/transition")
 def transition_challenge(
     challenge_id: int,
