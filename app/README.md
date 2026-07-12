@@ -2,8 +2,10 @@
 
 Standalone build of the EcoSphere spec ([PLAN.md](../PLAN.md), [ARCHITECTURE.md](../ARCHITECTURE.md),
 [DESIGN_FRAMEWORK.md](../DESIGN_FRAMEWORK.md), [wireframe/index.html](../wireframe/index.html)).
-Backend: **FastAPI + SQLAlchemy + SQLite** (local-first, offline). Frontend: **React + Vite**,
-hand-rolled SVG charts, design tokens ported from the approved wireframe.
+Backend: **FastAPI + SQLAlchemy**, storage selected by environment — local **SQLite** by
+default (zero-dependency dev), **CockroachDB** when `ECOSPHERE_DATABASE_URL` is set.
+Frontend: **React + Vite**, hand-rolled SVG charts, design tokens ported from the approved
+wireframe.
 
 The API surface both halves build against is [API_CONTRACT.md](API_CONTRACT.md).
 
@@ -42,6 +44,31 @@ orgs visible only to the Super Admin; org users are pinned to their own org by
 query-level record rules.
 
 Reset the demo: stop the server, delete `data/ecosphere.db`, re-run the seed, start again.
+
+### Database backends
+
+Storage is chosen by one environment variable — no code changes, no flags:
+
+| `ECOSPHERE_DATABASE_URL` | Backend |
+|---|---|
+| unset (default) | SQLite at `app/backend/data/ecosphere.db` — exactly the previous behavior |
+| `cockroachdb://user:pass@host:26257/ecosphere?sslmode=verify-full` | CockroachDB |
+
+```bash
+# copy the connection string from the CockroachDB Cloud console
+# (postgresql:// URLs are accepted and upgraded to the cockroachdb dialect)
+export ECOSPHERE_DATABASE_URL='cockroachdb://user:pass@host:26257/ecosphere?sslmode=verify-full'
+.venv/bin/uvicorn ecosphere_api.main:app --port 8000
+```
+
+The URL lives only in the environment (`.env` is gitignored — never commit it). TLS fails
+closed: remote URLs without an `sslmode` get `verify-full`. Primary keys are `Identity()`
+columns so CockroachDB issues small sequential ids on both backends (its default
+`unique_rowid()` would exceed JavaScript's safe-integer range and corrupt ids in the
+frontend). The same seed command works against either backend. Under heavy concurrent
+write contention CockroachDB's SERIALIZABLE isolation can surface retryable `40001`
+errors; if that ever shows up in practice, wrap the hot paths with
+`sqlalchemy_cockroachdb.run_transaction`.
 
 ### 2. Frontend (port 5173)
 

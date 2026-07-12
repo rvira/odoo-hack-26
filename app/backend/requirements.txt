@@ -7,3 +7,5 @@ sqlalchemy==2.0.41
 pydantic==2.11.7
 bcrypt==4.3.0
 python-multipart==0.0.32
+sqlalchemy-cockroachdb==2.0.2
+psycopg2-binary==2.9.10

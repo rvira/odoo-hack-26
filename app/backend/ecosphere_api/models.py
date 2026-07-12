@@ -1,11 +1,16 @@
 """SQLAlchemy models — every constraint the docs' §5b validation matrix demands
 is enforced here (CHECK / UNIQUE) and re-checked in the routers with clear
-messages. The server rejects it; the UI merely explains it."""
+messages. The server rejects it; the UI merely explains it.
+
+Primary keys use Identity() rather than SERIAL: on CockroachDB, SERIAL means
+unique_rowid() whose 64-bit values exceed JavaScript's safe-integer range and
+would corrupt ids in the frontend. Identity sequences stay small on both
+backends (SQLite ignores Identity and keeps its native autoincrement)."""
 from datetime import date, datetime
 
 from sqlalchemy import (
-    Boolean, CheckConstraint, Date, DateTime, Float, ForeignKey, Integer,
-    String, Text, UniqueConstraint,
+    Boolean, CheckConstraint, Date, DateTime, Float, ForeignKey, Identity,
+    Integer, String, Text, UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,7 +22,7 @@ class Organization(Base):
     employees are pinned to their org by query-level record rules; the Super
     Admin role reads across orgs (read-scoped, per ARCHITECTURE.md §7)."""
     __tablename__ = "organizations"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     ouid: Mapped[str] = mapped_column(String(12), unique=True)  # e.g. OU-1001
     name: Mapped[str] = mapped_column(String(120), unique=True)
     admin_name: Mapped[str] = mapped_column(String(120), default="")
@@ -27,14 +32,14 @@ class Organization(Base):
 class PlatformSettings(Base):
     """Platform-tier config owned by the Super Admin (single row)."""
     __tablename__ = "platform_settings"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     alerting_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
 class Department(Base):
     __tablename__ = "departments"
     __table_args__ = (UniqueConstraint("org_id", "code"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     org_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), index=True)
     name: Mapped[str] = mapped_column(String(120))
     code: Mapped[str] = mapped_column(String(12))
@@ -47,7 +52,7 @@ class Department(Base):
 
 class User(Base):
     __tablename__ = "users"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     email: Mapped[str] = mapped_column(String(200), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(120))
     password_hash: Mapped[str] = mapped_column(String(200))
@@ -71,7 +76,7 @@ class User(Base):
 
 class Session(Base):
     __tablename__ = "sessions"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime)
@@ -83,7 +88,7 @@ class OrgSettings(Base):
         CheckConstraint("weight_e + weight_s + weight_g = 100", name="weights_sum_100"),
         UniqueConstraint("org_id"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     org_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), index=True)
     weight_e: Mapped[int] = mapped_column(Integer, default=40)
     weight_s: Mapped[int] = mapped_column(Integer, default=30)
@@ -102,7 +107,7 @@ class OrgSettings(Base):
 class Category(Base):
     __tablename__ = "categories"
     __table_args__ = (UniqueConstraint("name", "type"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(80))
     type: Mapped[str] = mapped_column(String(16))  # csr|challenge
     active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -114,7 +119,7 @@ class EmissionFactor(Base):
         CheckConstraint("kgco2e_per_unit > 0", name="factor_positive"),
         UniqueConstraint("name", "scope", "unit"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     scope: Mapped[int] = mapped_column(Integer)  # 1|2|3
     unit: Mapped[str] = mapped_column(String(24))
@@ -126,7 +131,7 @@ class EmissionFactor(Base):
 class CarbonTransaction(Base):
     __tablename__ = "carbon_transactions"
     __table_args__ = (CheckConstraint("quantity > 0", name="qty_positive"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     ref: Mapped[str] = mapped_column(String(16), unique=True)
     source_type: Mapped[str] = mapped_column(String(20), index=True)  # purchase|manufacturing|expense|fleet
     source_desc: Mapped[str] = mapped_column(String(200))
@@ -144,7 +149,7 @@ class CarbonTransaction(Base):
 class EnvironmentalGoal(Base):
     __tablename__ = "environmental_goals"
     __table_args__ = (CheckConstraint("target_value > 0", name="target_positive"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(160))
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"))
     target_value: Mapped[float] = mapped_column(Float)  # tCO2e budget for the period
@@ -155,7 +160,7 @@ class EnvironmentalGoal(Base):
 
 class ProductProfile(Base):
     __tablename__ = "product_profiles"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     sku: Mapped[str] = mapped_column(String(24), unique=True)
     name: Mapped[str] = mapped_column(String(120))
     co2_per_unit: Mapped[float] = mapped_column(Float)
@@ -166,7 +171,7 @@ class ProductProfile(Base):
 class CsrActivity(Base):
     __tablename__ = "csr_activities"
     __table_args__ = (CheckConstraint("points > 0", name="points_positive"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(160))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     when_label: Mapped[str] = mapped_column(String(40), default="Ongoing")
@@ -182,7 +187,7 @@ class Participation(Base):
         UniqueConstraint("user_id", "activity_id"),
         CheckConstraint("points_earned >= 0", name="points_non_negative"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     activity_id: Mapped[int] = mapped_column(ForeignKey("csr_activities.id"), index=True)
     proof_name: Mapped[str | None] = mapped_column(String(160))
@@ -198,7 +203,7 @@ class Participation(Base):
 class Challenge(Base):
     __tablename__ = "challenges"
     __table_args__ = (CheckConstraint("xp > 0", name="xp_positive"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     title: Mapped[str] = mapped_column(String(160))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     xp: Mapped[int] = mapped_column(Integer)
@@ -216,7 +221,7 @@ class ChallengeParticipation(Base):
         CheckConstraint("progress >= 0 AND progress <= 100", name="progress_range"),
         CheckConstraint("xp_awarded >= 0", name="xp_non_negative"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     challenge_id: Mapped[int] = mapped_column(ForeignKey("challenges.id"), index=True)
     progress: Mapped[int] = mapped_column(Integer, default=0)
@@ -231,7 +236,7 @@ class ChallengeParticipation(Base):
 
 class Policy(Base):
     __tablename__ = "policies"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(160))
     version: Mapped[str] = mapped_column(String(12), default="v1")
     updated: Mapped[date] = mapped_column(Date, default=date.today)
@@ -242,7 +247,7 @@ class Policy(Base):
 class PolicyAck(Base):
     __tablename__ = "policy_acks"
     __table_args__ = (UniqueConstraint("user_id", "policy_id", "version"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     policy_id: Mapped[int] = mapped_column(ForeignKey("policies.id"), index=True)
     version: Mapped[str] = mapped_column(String(12))
@@ -253,7 +258,7 @@ class PolicyAck(Base):
 
 class Audit(Base):
     __tablename__ = "audits"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     title: Mapped[str] = mapped_column(String(160))
     type: Mapped[str] = mapped_column(String(60))
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"))
@@ -265,7 +270,7 @@ class Audit(Base):
 
 class ComplianceIssue(Base):
     __tablename__ = "compliance_issues"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     title: Mapped[str] = mapped_column(String(200))
     audit_id: Mapped[int] = mapped_column(ForeignKey("audits.id"))
     severity: Mapped[str] = mapped_column(String(12))  # low|medium|high|critical
@@ -280,7 +285,7 @@ class ComplianceIssue(Base):
 
 class Certification(Base):
     __tablename__ = "certifications"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     icon: Mapped[str] = mapped_column(String(8), default="🛡️")
     name: Mapped[str] = mapped_column(String(160))
     status: Mapped[str] = mapped_column(String(60))
@@ -292,7 +297,7 @@ class Certification(Base):
 class Badge(Base):
     __tablename__ = "badges"
     __table_args__ = (CheckConstraint("rule_threshold > 0", name="threshold_positive"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     icon: Mapped[str] = mapped_column(String(8))
     name: Mapped[str] = mapped_column(String(80), unique=True)
     description: Mapped[str] = mapped_column(String(200))
@@ -304,7 +309,7 @@ class Badge(Base):
 class BadgeAward(Base):
     __tablename__ = "badge_awards"
     __table_args__ = (UniqueConstraint("user_id", "badge_id"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     badge_id: Mapped[int] = mapped_column(ForeignKey("badges.id"))
     awarded_on: Mapped[date] = mapped_column(Date, default=date.today)
@@ -316,7 +321,7 @@ class Reward(Base):
         CheckConstraint("cost > 0", name="cost_positive"),
         CheckConstraint("stock >= 0", name="stock_non_negative"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     icon: Mapped[str] = mapped_column(String(8))
     name: Mapped[str] = mapped_column(String(160))
     category: Mapped[str] = mapped_column(String(40))
@@ -327,7 +332,7 @@ class Reward(Base):
 class Redemption(Base):
     __tablename__ = "redemptions"
     __table_args__ = (CheckConstraint("points_spent > 0", name="spent_positive"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     reward_id: Mapped[int] = mapped_column(ForeignKey("rewards.id"))
     points_spent: Mapped[int] = mapped_column(Integer)
@@ -336,7 +341,7 @@ class Redemption(Base):
 
 class Notification(Base):
     __tablename__ = "notifications"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     icon: Mapped[str] = mapped_column(String(8), default="🔔")
     kind: Mapped[str] = mapped_column(String(8), default="env")  # env|soc|gov|game|danger
