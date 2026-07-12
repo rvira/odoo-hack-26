@@ -122,20 +122,21 @@ def hr_attrs(i: int) -> dict:
 
 
 def _demo_password() -> str:
-    pw = os.environ.get("ECOSPHERE_DEMO_PASSWORD", "12343456Qwerttyu@#$")
-    if not pw:
-        pw = secrets.token_urlsafe(9)
-        cred_file = DATA_DIR / "DEMO_CREDENTIALS.txt"
-        cred_file.write_text(
-            "EcoSphere demo credentials (local demo only — file is gitignored)\n"
-            f"generated: {datetime.now().isoformat(timespec='seconds')}\n\n"
-            f"password for all demo accounts: {pw}\n"
-            "super admin: fabien.pinckaers@odoo.com\n"
-            "org admin:   admin@acme.com\n"
-            "employees:   aditi@acme.com karan@acme.com priya@acme.com "
-            "rohit@acme.com sana@acme.com\n"
-        )
-        os.chmod(cred_file, 0o600)
+    # never hardcoded: ECOSPHERE_DEMO_PASSWORD overrides, otherwise generate.
+    # The credentials file is (re)written on EVERY seed so it always matches
+    # the passwords actually stored in the database.
+    pw = os.environ.get("ECOSPHERE_DEMO_PASSWORD") or secrets.token_urlsafe(9)
+    cred_file = DATA_DIR / "DEMO_CREDENTIALS.txt"
+    cred_file.write_text(
+        "EcoSphere demo credentials (local demo only — file is gitignored)\n"
+        f"generated: {datetime.now().isoformat(timespec='seconds')}\n\n"
+        f"password for all demo accounts: {pw}\n"
+        "super admin: fabien.pinckaers@odoo.com\n"
+        "org admin:   admin@acme.com\n"
+        "employees:   aditi@acme.com karan@acme.com priya@acme.com "
+        "rohit@acme.com sana@acme.com\n"
+    )
+    os.chmod(cred_file, 0o600)
     return pw
 
 
