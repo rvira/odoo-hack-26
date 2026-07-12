@@ -34,7 +34,9 @@ export async function api(path, { method = 'GET', body, form } = {}) {
     payload = JSON.stringify(body);
   }
   const res = await fetch(`/api${path}`, { method, headers, body: payload });
-  if (res.status === 401) {
+  // 401 means "session expired" only on authenticated calls — an unauthenticated
+  // 401 (e.g. wrong password on login) must surface the server's own message
+  if (res.status === 401 && _token) {
     if (_onUnauthorized) _onUnauthorized();
     throw new Error('Session expired — please sign in again');
   }
@@ -53,7 +55,7 @@ export async function apiBlob(path) {
   const headers = {};
   if (_token) headers.Authorization = `Bearer ${_token}`;
   const res = await fetch(`/api${path}`, { headers });
-  if (res.status === 401) {
+  if (res.status === 401 && _token) {
     if (_onUnauthorized) _onUnauthorized();
     throw new Error('Session expired — please sign in again');
   }

@@ -557,8 +557,8 @@ function Rewards() {
 
   return (
     <>
-      <div className="note env" style={{ alignItems: 'center' }}>
-        💰 <span><b>Your balance: {points.toLocaleString()} pts</b> — redeeming deducts points instantly, subject to stock.</span>
+      <div className="note env" style={{ alignItems: 'center', fontSize: 14 }}>
+        💰 <span><b style={{ fontSize: 16 }}>Your balance: {points.toLocaleString()} pts</b> — redeeming deducts points instantly, subject to stock.</span>
       </div>
       <section className="card">
         <h2>Rewards catalog</h2>

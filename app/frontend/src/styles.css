@@ -104,7 +104,7 @@ select,input,textarea{font:inherit;color:inherit}
 .content{width:100%;max-width:1280px;margin:0 auto;padding:22px 20px 60px;display:flex;flex-direction:column;gap:18px}
 @media(max-width:640px){.content{padding:16px 12px 48px}}
 .pagehead{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
-.pagehead h1{font-size:20px;letter-spacing:-.02em}
+.pagehead h1{font-size:20px;letter-spacing:-.02em;font-weight:700}
 .pagehead p{width:100%;color:var(--muted);font-size:13px;margin-top:-6px}
 .pagehead .act{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 
