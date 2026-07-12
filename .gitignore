@@ -1,0 +1,35 @@
+# Secrets & local config
+.env
+*.local
+odoo.conf
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.python-version
+
+# Odoo
+filestore/
+sessions/
+*.log
+
+# Editors & OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Node (if front-end tooling is added)
+node_modules/
+
+# Build & test artifacts
+dist/
+build/
+.coverage
+htmlcov/
+.pytest_cache/
