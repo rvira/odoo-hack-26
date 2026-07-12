@@ -5,6 +5,9 @@ odoo.conf
 *.pem
 *.key
 
+# Local database, demo credentials and uploaded proofs — never committed
+app/backend/data/
+
 # Python
 __pycache__/
 *.py[cod]
