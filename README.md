@@ -112,17 +112,25 @@ EcoSphere is designed as a single Odoo addon (`ecosphere`) that **reuses the ERP
 
 **Validation-first:** every model ships with layered server-side validation — required fields, cross-field checks, and database-level constraints. The server rejects invalid input; the UI merely explains it.
 
-## 🚀 Quick Start (WIP)
+## 🚀 Quick Start
 
-> Detailed setup instructions will land here once the tech stack is locked.
+A standalone build of the spec lives in [`app/`](app/) — **FastAPI (Python) backend + React (Vite) frontend**, local-first SQLite, seeded with 12 months of live operational history. Full instructions in [app/README.md](app/README.md).
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/<your-org>/odoo-hack-26.git
 cd odoo-hack-26
 
-# 2. Follow the setup steps for the chosen stack (TBD — coming soon)
+# 2. Backend (port 8000) — first start seeds the DB and generates demo credentials
+cd app/backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/uvicorn ecosphere_api.main:app --port 8000
+# demo password → app/backend/data/DEMO_CREDENTIALS.txt
+
+# 3. Frontend (port 5173), in a second terminal
+cd app/frontend && npm install && npm run dev
 ```
+
+The `ecosphere/` directory holds the (skeleton) native Odoo addon per [ARCHITECTURE.md](ARCHITECTURE.md); the API surface shared by the app's two halves is [app/API_CONTRACT.md](app/API_CONTRACT.md).
 
 ## 🤝 Contributing (WIP)
 
