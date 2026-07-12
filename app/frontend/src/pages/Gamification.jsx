@@ -6,7 +6,7 @@ import { useApi } from '../hooks.js';
 import Tabs from '../components/Tabs.jsx';
 import DataTable from '../components/DataTable.jsx';
 import Kanban from '../components/Kanban.jsx';
-import Modal from '../components/Modal.jsx';
+import Modal, { Field } from '../components/Modal.jsx';
 import Pill, { Chip, StatusPill } from '../components/Pill.jsx';
 import { MeterRow, LabeledMeter } from '../components/Meter.jsx';
 import ProofLink from '../components/ProofLink.jsx';
@@ -31,6 +31,94 @@ const KCOL = {
   Completed: 'var(--game)',
   Archived: 'var(--faint)',
 };
+const STATE_SLUG = {
+  Draft: 'draft', Active: 'active', 'Under Review': 'review',
+  Completed: 'completed', Archived: 'archived',
+};
+
+/** Admin-only create/edit form — pass `challenge` to edit a Draft.
+ *  The server (schemas.ChallengeIn) revalidates everything either way. */
+function ChallengeModal({ challenge, onClose, onSaved }) {
+  const toast = useToast();
+  const { data: categories } = useApi('/categories');
+  const [form, setForm] = useState(challenge ? {
+    title: challenge.title, category_id: String(challenge.category_id),
+    xp: String(challenge.xp), difficulty: challenge.difficulty.toLowerCase(),
+    deadline: challenge.deadline, evidence_required: challenge.evidence_required,
+  } : {
+    title: '', category_id: '', xp: '100', difficulty: 'medium', deadline: '', evidence_required: false,
+  });
+  const [serverError, setServerError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const challengeCats = (categories || []).filter((c) => c.type === 'challenge');
+
+  const save = async () => {
+    setServerError('');
+    setBusy(true);
+    try {
+      await api(challenge ? `/challenges/${challenge.id}` : '/challenges', {
+        method: challenge ? 'PUT' : 'POST',
+        body: {
+          title: form.title.trim(),
+          category_id: Number(form.category_id),
+          xp: Number(form.xp),
+          difficulty: form.difficulty,
+          deadline: form.deadline,
+          evidence_required: form.evidence_required,
+        },
+      });
+      toast(challenge ? '✅ Challenge updated' : '✅ Challenge created in Draft');
+      onSaved();
+    } catch (err) {
+      setServerError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal title={challenge ? 'Edit challenge' : 'New challenge'}
+      sub={challenge ? 'Drafts stay editable until you activate them.' : 'Created in Draft — activate it from the board when it\'s ready.'}
+      onClose={onClose} serverError={serverError}
+      footer={<>
+        <button className="btn out" onClick={onClose}>Cancel</button>
+        <button className="btn game" onClick={save} disabled={busy}>
+          {busy ? 'Saving…' : challenge ? 'Save changes' : 'Create challenge'}
+        </button>
+      </>}>
+      <Field label="Title *">
+        <input value={form.title} onChange={set('title')} placeholder="e.g. Zero Waste Week" maxLength={160} />
+      </Field>
+      <Field label="Category *">
+        <select value={form.category_id} onChange={set('category_id')}>
+          <option value="">Select…</option>
+          {challengeCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </Field>
+      <div className="grid g2" style={{ gap: 10 }}>
+        <Field label="XP *">
+          <input type="number" min="1" value={form.xp} onChange={set('xp')} />
+        </Field>
+        <Field label="Difficulty *">
+          <select value={form.difficulty} onChange={set('difficulty')}>
+            <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+          </select>
+        </Field>
+      </div>
+      <Field label="Deadline *">
+        <input type="date" value={form.deadline} onChange={set('deadline')} />
+      </Field>
+      <Field>
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
+          <input type="checkbox" checked={form.evidence_required}
+            onChange={(e) => setForm((f) => ({ ...f, evidence_required: e.target.checked }))} />
+          Require proof before approval
+        </label>
+      </Field>
+    </Modal>
+  );
+}
 
 /** Detail modal for a kanban card. For employees it carries the Join action or
  *  their participation controls (progress slider + proof), matched by title. */
@@ -118,6 +206,8 @@ function Challenges() {
   const { data: parts, reload: reloadParts } = useApi(isEmployee ? '/challenge-participations' : null);
   const [busyId, setBusyId] = useState(null);
   const [selId, setSelId] = useState(null);
+  const [showNew, setShowNew] = useState(false);
+  const [editing, setEditing] = useState(null);
 
   const join = async (id) => {
     setBusyId(id);
@@ -149,11 +239,23 @@ function Challenges() {
   if (loading) return <p className="loading">Loading challenges…</p>;
   if (error) return <p className="loaderr">⚠️ {error}</p>;
 
+  // admin drag & drop: dropping a card on a column runs the same legal
+  // transition as the buttons — the server rejects illegal moves with a 409
+  const onDropCard = isAdmin
+    ? (key, toCol) => {
+      const id = Number(key);
+      const from = COLUMN_ORDER.find((name) => (data.columns[name] || []).some((c) => c.id === id));
+      if (!from || from === toCol) return;
+      transition(id, STATE_SLUG[toCol], `Challenge moved: ${from} → ${toCol}`);
+    }
+    : undefined;
+
   const columns = COLUMN_ORDER.map((name) => ({
     name,
     dotColor: KCOL[name],
     cards: (data.columns[name] || []).map((c) => ({
       key: c.id,
+      draggable: isAdmin,
       onClick: () => setSelId(c.id),
       body: (
         <>
@@ -172,8 +274,12 @@ function Challenges() {
                   onClick={(e) => { e.stopPropagation(); join(c.id); }}>Join</button>
           )}
           {isAdmin && name === 'Draft' && (
-            <button className="btn out sm" disabled={busyId === c.id}
-              onClick={(e) => { e.stopPropagation(); transition(c.id, 'active', 'Challenge moved: Draft → Active'); }}>Activate →</button>
+            <span style={{ display: 'inline-flex', gap: 6 }}>
+              <button className="btn out sm" disabled={busyId === c.id}
+                onClick={(e) => { e.stopPropagation(); setEditing(c); }}>Edit</button>
+              <button className="btn out sm" disabled={busyId === c.id}
+                onClick={(e) => { e.stopPropagation(); transition(c.id, 'active', 'Challenge moved: Draft → Active'); }}>Activate →</button>
+            </span>
           )}
           {isAdmin && name === 'Under Review' && (
             <button className="btn pri sm" disabled={busyId === c.id}
@@ -199,15 +305,29 @@ function Challenges() {
 
   return (
     <section className="card">
-      <h2>Challenge lifecycle</h2>
-      <p className="sub">Full status flow with actions at each stage — click a card for details</p>
-      <Kanban columns={columns} />
-      <p className="hint">Lifecycle: Draft → Active → Under Review → Completed · Archive from any state. Swipe/scroll horizontally on mobile.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 10, flexWrap: 'wrap' }}>
+        <div>
+          <h2>Challenge lifecycle</h2>
+          <p className="sub">Full status flow with actions at each stage — click a card for details</p>
+        </div>
+        {isAdmin && (
+          <button className="btn game sm" onClick={() => setShowNew(true)}>+ New challenge</button>
+        )}
+      </div>
+      <Kanban columns={columns} onDropCard={onDropCard} />
+      <p className="hint">
+        Lifecycle: Draft → Active → Under Review → Completed · Archive from any state.
+        {isAdmin ? ' Drag a card to its next stage — illegal moves are rejected.' : ''} Swipe/scroll horizontally on mobile.
+      </p>
       {selected && (
         <ChallengeDetail card={selected.card} column={selected.column} participation={myPart}
           isEmployee={isEmployee} busy={busyId === selected.card.id}
           onJoin={join} onClose={() => setSelId(null)}
           onChanged={() => { reload(); reloadParts(); }} />
+      )}
+      {(showNew || editing) && (
+        <ChallengeModal challenge={editing} onClose={() => { setShowNew(false); setEditing(null); }}
+          onSaved={() => { setShowNew(false); setEditing(null); reload(); }} />
       )}
     </section>
   );
@@ -272,7 +392,7 @@ function Mine() {
       <section className="card">
         <h2>My challenge participation</h2>
         <p className="sub">Progress, proof and XP for challenges you joined</p>
-        <DataTable columns={['Challenge', 'Progress', 'Proof', 'Status', 'XP awarded']}
+        <DataTable columns={['Challenge', 'Progress', 'Proof', 'Status', { label: 'XP awarded', num: true }]}
           empty="You haven't joined any challenges yet."
           rows={data.map((c) => {
             const inProgress = String(c.status).toLowerCase() === 'in_progress';
@@ -301,7 +421,7 @@ function Mine() {
     <section className="card">
       <h2>Challenge participation — approvals</h2>
       <p className="sub">Proof review for challenges at 100% progress</p>
-      <DataTable columns={['Employee', 'Challenge', 'Progress', 'Proof', 'XP', 'Status', 'Decision']}
+      <DataTable columns={['Employee', 'Challenge', 'Progress', 'Proof', { label: 'XP', num: true }, 'Status', 'Decision']}
         empty="No participations in the queue."
         rows={data.map((q) => {
           const noProof = !q.proof;
@@ -313,7 +433,10 @@ function Mine() {
               q.challenge,
               <div style={{ minWidth: 140 }}><MeterRow value={q.progress} accent="var(--game-acc)" /></div>,
               q.proof
-                ? <ProofLink path={`/challenge-participations/${q.id}/proof-file`} name={q.proof} />
+                ? <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                    <ProofLink path={`/challenge-participations/${q.id}/proof-file`} name={q.proof} />
+                    {q.proof_method === 'capture' && <Chip>📷 captured</Chip>}
+                  </span>
                 : <Pill tone="dgr">proof missing</Pill>,
               <span className="num">{q.xp}</span>,
               <StatusPill status={q.status} />,
@@ -362,7 +485,7 @@ function Leaderboard() {
           </div>
         ))}
       </div>
-      <DataTable columns={['Rank', 'Name', 'Department', 'XP']} empty="No XP earned yet."
+      <DataTable columns={[{ label: 'Rank', num: true }, 'Name', 'Department', { label: 'XP', num: true }]} empty="No XP earned yet."
         rows={rows.map((p, i) => ({
           key: i,
           cells: [
@@ -450,8 +573,8 @@ function Rewards() {
 
   return (
     <>
-      <div className="note env" style={{ alignItems: 'center' }}>
-        💰 <span><b>Your balance: {points.toLocaleString()} pts</b> — redeeming deducts points instantly, subject to stock.</span>
+      <div className="note env" style={{ alignItems: 'center', fontSize: 14 }}>
+        💰 <span><b style={{ fontSize: 16 }}>Your balance: {points.toLocaleString()} pts</b> — redeeming deducts points instantly, subject to stock.</span>
       </div>
       <section className="card">
         <h2>Rewards catalog</h2>

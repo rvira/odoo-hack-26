@@ -251,7 +251,7 @@ function SuperDashboard({ data, reload }) {
         <p>All organizations — ESG posture, goal delivery and live interventions.</p>
       </div>
 
-      <div className="grid g4">
+      <div className="grid g4 big">
         <KpiCard label="Organizations" value={k.organizations} accent="var(--primary)" />
         <KpiCard label="Avg ESG score" value={k.avg_esg} accent="var(--ink)" suffix=" / 100" />
         <KpiCard label="Goals on track" value={k.goals_on_track} accent="var(--ok)" suffix={` of ${k.goals_total}`} />
@@ -282,7 +282,7 @@ function SuperDashboard({ data, reload }) {
       <section className="card">
         <h2>Organizations</h2>
         <p className="sub">Live ESG posture per tenant — sorted by overall score</p>
-        <DataTable columns={['OUID', 'Organization', 'ESG Admin', 'Employees', 'E', 'S', 'G', 'Overall']}
+        <DataTable columns={['OUID', 'Organization', 'ESG Admin', { label: 'Employees', num: true }, { label: 'E', num: true }, { label: 'S', num: true }, { label: 'G', num: true }, 'Overall']}
           empty="No organizations onboarded yet."
           rows={data.orgs.map((o) => ({
             key: o.id,

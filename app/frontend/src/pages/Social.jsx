@@ -16,23 +16,27 @@ const TABS = [
   ['diversity', 'Diversity & Training'],
 ];
 
-/* Shared proof-upload button (multipart POST). Server enforces type/size/magic bytes. */
+/* Shared proof controls: pick a file OR capture a photo (camera on mobile).
+   Multipart POST either way; the server validates type/size/magic bytes and
+   records which method was used. */
 export function ProofUpload({ path, onDone, label = 'Upload proof' }) {
   const toast = useToast();
-  const inputRef = useRef(null);
+  const fileRef = useRef(null);
+  const camRef = useRef(null);
   const [busy, setBusy] = useState(false);
 
-  const onPick = async (e) => {
+  const send = (method) => async (e) => {
     const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast('File too large — max 5 MB'); return; }
     const form = new FormData();
     form.append('file', file);
+    form.append('method', method);
     setBusy(true);
     try {
       await api(path, { method: 'POST', form });
-      toast('📎 Proof attached — awaiting review');
+      toast(method === 'capture' ? '📷 Photo captured — awaiting review' : '📎 Proof attached — awaiting review');
       onDone();
     } catch (err) {
       toast(err.message);
@@ -42,12 +46,17 @@ export function ProofUpload({ path, onDone, label = 'Upload proof' }) {
   };
 
   return (
-    <>
-      <input ref={inputRef} type="file" accept=".jpg,.jpeg,.png,.pdf" style={{ display: 'none' }} onChange={onPick} />
-      <button className="btn out sm" disabled={busy} onClick={() => inputRef.current && inputRef.current.click()}>
+    <span style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}>
+      <input ref={fileRef} type="file" accept=".jpg,.jpeg,.png,.pdf" style={{ display: 'none' }} onChange={send('upload')} />
+      <input ref={camRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={send('capture')} />
+      <button className="btn out sm" disabled={busy} onClick={() => fileRef.current && fileRef.current.click()}>
         {busy ? 'Uploading…' : label}
       </button>
-    </>
+      <button className="btn out sm" disabled={busy} title="Take a photo with your camera"
+        onClick={() => camRef.current && camRef.current.click()}>
+        📷 Capture
+      </button>
+    </span>
   );
 }
 
@@ -144,7 +153,7 @@ function Participations() {
       <section className="card">
         <h2>My participations</h2>
         <p className="sub">Approval decisions trigger notifications automatically</p>
-        <DataTable columns={['Activity', 'Completed', 'Proof', 'Points', 'Status']}
+        <DataTable columns={['Activity', 'Completed', 'Proof', { label: 'Points', num: true }, 'Status']}
           empty="You haven't joined any CSR activities yet."
           rows={data.map((q) => ({
             key: q.id,
@@ -166,7 +175,7 @@ function Participations() {
     <section className="card">
       <h2>Participation approvals</h2>
       <p className="sub">CSR participation queue — points are awarded on approval</p>
-      <DataTable columns={['Employee', 'Activity', 'Completed', 'Proof', 'Points', 'Status', 'Decision']}
+      <DataTable columns={['Employee', 'Activity', 'Completed', 'Proof', { label: 'Points', num: true }, 'Status', 'Decision']}
         empty="No participations in the queue."
         rows={data.map((q) => {
           const noProof = !q.proof;
@@ -178,7 +187,10 @@ function Participations() {
               q.activity,
               <span className="mut">{q.completed}</span>,
               q.proof
-                ? <ProofLink path={`/participations/${q.id}/proof-file`} name={q.proof} />
+                ? <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                    <ProofLink path={`/participations/${q.id}/proof-file`} name={q.proof} />
+                    {q.proof_method === 'capture' && <Chip>📷 captured</Chip>}
+                  </span>
                 : <Pill tone="dgr">proof missing</Pill>,
               <span className="num">{q.points}</span>,
               <StatusPill status={q.status} />,

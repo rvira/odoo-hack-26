@@ -199,8 +199,8 @@ def env_summary(user: models.User = Depends(security.require_org_user), db: Sess
         .all()
     )
     scope_total = sum(kg for _, kg in scope_rows) or 1
-    scope_label = {1: "Scope 1 — direct + fleet", 2: "Scope 2 — electricity",
-                   3: "Scope 3 — value chain"}
+    scope_label = {1: "Scope 1 · Direct (own fuel & fleet)", 2: "Scope 2 · Energy (purchased electricity)",
+                   3: "Scope 3 · Value chain (suppliers & travel)"}
     by_scope = [
         {"scope": s, "label": scope_label[s], "tonnes": round(kg / 1000, 1),
          "pct": round(100 * kg / scope_total)}

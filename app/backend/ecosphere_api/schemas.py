@@ -100,6 +100,22 @@ class ResolveIn(Strict):
     resolution: str = Field(min_length=3, max_length=2000)
 
 
+class ChallengeIn(Strict):
+    title: str = Field(min_length=1, max_length=160)
+    category_id: int = Field(gt=0)
+    xp: int = Field(gt=0, le=10000)
+    difficulty: str = Field(default="medium", pattern=r"^(easy|medium|hard)$")
+    evidence_required: bool = False
+    deadline: date
+
+    @field_validator("deadline")
+    @classmethod
+    def future(cls, v: date) -> date:
+        if v <= date.today():
+            raise ValueError("Deadline must be in the future")
+        return v
+
+
 class TransitionIn(Strict):
     to: str = Field(pattern=r"^(draft|active|review|completed|archived)$")
 
