@@ -1,0 +1,23 @@
+// Owner: UI (ARCHITECTURE.md §8 + DESIGN_FRAMEWORK.md) — the SINGLE palette/token
+// file. No other SCSS/JS/QWeb defines color; no raw hex outside this file.
+//
+// WILL CONTAIN, in this order (ordering is binding — framework first):
+//
+// 1. FRAMEWORK LAYER — Odoo brand tokens ported per DESIGN_FRAMEWORK.md:
+//    Inter typography (self-hosted/offline, never hotlinked; weights 300/400/500/600,
+//    never 700+), --o-color-1..9 palette, functional-state triples, grays,
+//    radii (.625rem / cards 1.25rem / pills 50rem), shadows, dark-section pattern.
+//    Generic primary = Odoo purple #714B67 (Save/Confirm, nav, links — carries
+//    no pillar meaning). danger = framework #DC3545 (overdue/blocked only).
+//
+// 2. SEMANTIC PILLAR LAYER — direct port of the index.html :root block; wins on
+//    conflict with the framework layer. ONLY the four pillar identities
+//    (base / -soft tint / -line border):
+//      $env  #1b7a43 / $env-soft  #e7f4ec / $env-line  #bfe0cc   Environmental
+//      $soc  #0f766e / $soc-soft  #e6f4f2 / $soc-line  #b9dfda   Social (teal)
+//      $gov  #4f46e5 / $gov-soft  #edecfc / $gov-line  #c9c6f4   Governance (indigo)
+//      $game #b45309 / $game-acc #f59e0b / $game-soft #fdf3e2 / $game-line #f0d9ae  Gamification/XP
+//
+// Pill mapping: p-env→$env, p-soc→$soc, p-gov→$gov, p-game→$game;
+// "Pending" uses the framework warning triple; p-dgr→framework danger; p-mut→gray.
+// Breakpoints: 1024px sidebar collapse, 720px/640px reflow.

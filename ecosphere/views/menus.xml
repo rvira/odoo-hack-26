@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Owner: P0 (ARCHITECTURE.md §8) - Phase 1.
+
+WILL CONTAIN: root menu + anchor submenus with STABLE IDs owners hang actions
+under (nobody renames or re-parents them). Max 2 levels; same tree for every
+role - record rules trim visibility, menus are never the security boundary.
+
+  menu_ecosphere_root        EcoSphere
+  menu_ecosphere_dashboard   Dashboard
+  menu_ecosphere_env         Environmental  - Carbon Transactions | Goals | Products (SKU) | Env Dashboard
+  menu_ecosphere_social      Social         - CSR Activities | Participations | Diversity and Training
+  menu_ecosphere_gov         Governance     - Policies | Acknowledgements | Audits | Compliance Issues | Certifications
+  menu_ecosphere_game        Gamification   - Challenges | Participations | Leaderboard | Badges | Rewards
+  menu_ecosphere_reporting   Reporting      - ESG Summary | Environmental | Social | Governance | Custom Builder
+  menu_ecosphere_settings    Settings       - Departments | Categories | Emission Factors | ESG Configuration | Notifications
+-->
+<odoo>
+</odoo>

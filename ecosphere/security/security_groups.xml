@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Owner: P0 (ARCHITECTURE.md §7) - Phase 1.
+
+WILL CONTAIN:
+  - ir.module.category "EcoSphere"
+  - res.groups with STABLE XML IDs (never renamed):
+      group_ecosphere_employee  - participate: own participations, challenges, rewards, policy acks
+      group_ecosphere_admin     - configure: master data, factors, settings, approvals, audits
+                                  (implies employee - hierarchical)
+      group_ecosphere_manager   - consume: all dashboards, reports, read-all
+  - record-rule skeleton: company_id scoping rule on EVERY ecosphere.* model;
+    per-model "own records only" / "own department only" employee rules land
+    with each owner's slice (ARCHITECTURE.md §7 record rules).
+
+DEFERRED (sign-off decision #1): group_ecosphere_super - platform-tier,
+read-scoped cross-company rule only; never disable the base company rule
+(CWE-284/639). Build only after Phases 1-5 are demo-green.
+-->
+<odoo>
+</odoo>
