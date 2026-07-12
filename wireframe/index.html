@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EcoSphere — Wireframe</title>
+<!-- Self-contained wireframe: no CDNs, no fonts, no network. Works fully offline. -->
+<!-- Static demo data below is prototyping-only; the real build binds every number to live records. -->
+<style>
+/* ============ Design tokens — one palette, applied everywhere ============ */
+:root{
+  --env:#1b7a43; --env-soft:#e7f4ec; --env-line:#bfe0cc;
+  --soc:#0f766e; --soc-soft:#e6f4f2; --soc-line:#b9dfda;
+  --gov:#4f46e5; --gov-soft:#edecfc; --gov-line:#c9c6f4;
+  --game:#b45309; --game-acc:#f59e0b; --game-soft:#fdf3e2; --game-line:#f0d9ae;
+  --danger:#dc2626; --danger-soft:#fdeaea;
+  --ink:#1a2b22; --muted:#5f6f66; --faint:#8ea297;
+  --bg:#f4f7f5; --card:#ffffff; --line:#e2e9e4; --line2:#eef2ef;
+  --side:#0f2318; --side-ink:#cfe0d6; --side-muted:#7e9a8b;
+  --r:12px; --r-sm:8px;
+  --shadow:0 1px 2px rgba(15,35,24,.05),0 4px 14px rgba(15,35,24,.05);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font:14px/1.5 var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+a{color:inherit;text-decoration:none}
+select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--env);outline-offset:2px;border-radius:4px}
+
+/* ============ App shell ============ */
+.shell{display:flex;min-height:100%}
+.sidebar{position:fixed;inset:0 auto 0 0;z-index:40;width:256px;background:var(--side);color:var(--side-ink);
+  display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .2s ease;overflow-y:auto}
+.sidebar.open{transform:none}
+.backdrop{position:fixed;inset:0;z-index:30;background:rgba(10,20,14,.5);opacity:0;pointer-events:none;transition:opacity .2s}
+.backdrop.show{opacity:1;pointer-events:auto}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+@media(min-width:1024px){
+  .sidebar{position:sticky;top:0;height:100vh;transform:none;flex:none}
+  .backdrop,#menuBtn{display:none}
+}
+
+.brand{display:flex;align-items:center;gap:10px;padding:18px 20px 14px}
+.brand .logo{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--env);color:#fff;font-weight:700;font-size:15px}
+.brand b{font-size:15px;letter-spacing:-.01em;color:#fff}
+.brand small{display:block;font-size:10.5px;color:var(--side-muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+
+.nav{padding:6px 12px 20px;display:flex;flex-direction:column;gap:2px}
+.nav .grp{margin-top:14px;padding:0 10px 6px;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--side-muted)}
+.nav a{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:var(--side-ink)}
+.nav a svg{width:17px;height:17px;flex:none;opacity:.75}
+.nav a:hover{background:rgba(255,255,255,.06)}
+.nav a[aria-current]{background:rgba(255,255,255,.1);color:#fff;font-weight:600}
+.nav a[aria-current] svg{opacity:1}
+.nav a .dot{margin-left:auto;width:6px;height:6px;border-radius:99px}
+.side-foot{margin-top:auto;padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:11.5px;color:var(--side-muted)}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;height:58px;padding:0 16px;
+  background:rgba(244,247,245,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.iconbtn{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;color:var(--muted);position:relative}
+.iconbtn:hover{background:var(--line2)}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn .ping{position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:99px;background:var(--danger);border:2px solid var(--bg)}
+.search{flex:1;max-width:420px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--card);color:var(--faint);font-size:13px}
+.search svg{width:15px;height:15px}
+.search kbd{margin-left:auto;font:11px var(--mono);border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--faint)}
+.persona{display:flex;align-items:center;padding:3px;gap:2px;border:1px solid var(--line);border-radius:99px;background:var(--card)}
+.persona button{padding:5px 12px;border-radius:99px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.persona button.on{background:var(--env);color:#fff}
+.avatar{width:34px;height:34px;border-radius:99px;display:grid;place-items:center;background:var(--env-soft);color:var(--env);font-weight:700;font-size:12.5px;border:1px solid var(--env-line)}
+.spacer{flex:1}
+@media(max-width:720px){.search{display:none}.persona button{padding:5px 9px}}
+
+/* notification panel */
+.notif{position:absolute;top:52px;right:14px;z-index:50;width:min(360px,calc(100vw - 24px));background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:0 10px 34px rgba(15,35,24,.16);display:none}
+.notif.show{display:block}
+.notif header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line2);font-weight:600;font-size:13.5px}
+.notif header button{font-size:12px;color:var(--env);font-weight:600}
+.notif ul{list-style:none;max-height:340px;overflow:auto}
+.notif li{display:flex;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line2);font-size:13px}
+.notif li:last-child{border-bottom:0}
+.notif .nico{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:14px}
+.notif time{display:block;margin-top:2px;font-size:11.5px;color:var(--faint)}
+
+/* content */
+.content{width:100%;max-width:1280px;margin:0 auto;padding:22px 20px 60px;display:flex;flex-direction:column;gap:18px}
+@media(max-width:640px){.content{padding:16px 12px 48px}}
+.pagehead{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.pagehead h1{font-size:20px;letter-spacing:-.02em}
+.pagehead p{width:100%;color:var(--muted);font-size:13px;margin-top:-6px}
+.pagehead .act{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+.tabs{display:flex;gap:4px;padding:4px;background:var(--card);border:1px solid var(--line);border-radius:11px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:none;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current]{background:var(--tab-bg,var(--env-soft));color:var(--tab-ink,var(--env));font-weight:600}
+
+/* ============ Components ============ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}
+.card h2{font-size:14.5px;letter-spacing:-.01em;margin-bottom:2px}
+.card .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.grid{display:grid;gap:14px}
+.grid>*,.split>*{min-width:0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr))}
+.gcards{grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr))}
+
+.kpi{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 16px 14px;overflow:hidden}
+.kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--acc,var(--env))}
+.kpi .lbl{font-size:12.5px;color:var(--muted);font-weight:500}
+.kpi .val{margin-top:4px;font-size:27px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--acc,var(--env))}
+.kpi .val small{font-size:14px;color:var(--faint);font-weight:500}
+.kpi .delta{margin-top:2px;font-size:11.5px;font-weight:600}
+.kpi .delta.up{color:var(--env)} .kpi .delta.down{color:var(--danger)}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;font-size:13px;font-weight:600;
+  border:1px solid transparent;transition:filter .12s}
+.btn:hover{filter:brightness(1.06)}
+.btn.pri{background:var(--env);color:#fff}
+.btn.soc{background:var(--soc);color:#fff}
+.btn.gov{background:var(--gov);color:#fff}
+.btn.game{background:var(--game-acc);color:#3c2103}
+.btn.out{background:var(--card);border-color:var(--line);color:var(--ink);font-weight:500}
+.btn.out:hover{background:var(--line2)}
+.btn.dangr{background:var(--danger);color:#fff}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.btn[disabled]{background:var(--line2);color:var(--faint);cursor:not-allowed;border-color:var(--line);filter:none}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2.5px 9px;border-radius:99px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:5px;height:5px;border-radius:99px;background:currentColor}
+.p-env{background:var(--env-soft);color:var(--env)} .p-soc{background:var(--soc-soft);color:var(--soc)}
+.p-gov{background:var(--gov-soft);color:var(--gov)} .p-game{background:var(--game-soft);color:var(--game)}
+.p-dgr{background:var(--danger-soft);color:var(--danger)} .p-mut{background:var(--line2);color:var(--muted)}
+.chip{display:inline-flex;padding:2px 8px;border:1px solid var(--line);border-radius:6px;font-size:11.5px;font-weight:500;color:var(--muted);white-space:nowrap}
+
+.tscroll{overflow-x:auto;margin:0 -18px;padding:0 18px}
+table{width:100%;min-width:640px;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line2);white-space:nowrap;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fafcfa}
+tr.overdue{background:var(--danger-soft)}
+tr.overdue:hover{background:#fbdedc}
+tr.overdue td:first-child{box-shadow:inset 3px 0 0 var(--danger)}
+.mono{font:12px var(--mono)} .b{font-weight:600} .mut{color:var(--muted)} .num{font-variant-numeric:tabular-nums}
+
+.meter{height:7px;border-radius:99px;background:var(--line2);overflow:hidden;min-width:70px}
+.meter i{display:block;height:100%;border-radius:99px;background:var(--acc,var(--env))}
+.mrow{display:flex;align-items:center;gap:9px}
+.mlabeled{margin-bottom:13px}
+.mlabeled .t{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.mlabeled .t b{font-variant-numeric:tabular-nums}
+
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line2);cursor:pointer}
+.toggle:last-child{border-bottom:0}
+.toggle .tl b{display:block;font-size:13.5px;font-weight:600}
+.toggle .tl span{font-size:12px;color:var(--muted)}
+.sw{flex:none;width:40px;height:23px;border-radius:99px;background:#cbd5d0;position:relative;transition:background .15s}
+.sw::after{content:"";position:absolute;top:2.5px;left:3px;width:18px;height:18px;border-radius:99px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.sw.on{background:var(--env)} .sw.on::after{transform:translateX(16px)}
+
+/* kanban */
+.kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
+.kcol{flex:none;width:236px;scroll-snap-align:start;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:10px}
+.kcol h3{display:flex;align-items:center;gap:7px;font-size:12.5px;margin:2px 4px 10px}
+.kcol h3 .dot{width:7px;height:7px;border-radius:99px}
+.kcol h3 .n{margin-left:auto;font-size:11px;color:var(--faint);font-weight:600}
+.kcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px;margin-bottom:8px;box-shadow:var(--shadow)}
+.kcard .t{font-size:13px;font-weight:600;margin-bottom:5px}
+.kcard .meta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.kempty{border:1.5px dashed var(--line);border-radius:10px;padding:16px 10px;text-align:center;font-size:12px;color:var(--faint)}
+
+/* charts */
+.chart{width:100%;height:auto;display:block}
+.tchart{position:relative;margin-left:30px}
+.ylbls{position:absolute;left:-30px;top:0;bottom:0;width:26px}
+.ylbls span{position:absolute;right:4px;transform:translateY(-50%);font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.hotspots{position:absolute;inset:0}
+.hs{position:absolute;top:0;bottom:0}
+.hs:hover{background:linear-gradient(to right,transparent calc(50% - .5px),var(--faint) calc(50% - .5px),var(--faint) calc(50% + .5px),transparent calc(50% + .5px))}
+.tip{display:none;position:absolute;bottom:calc(100% - 34px);left:50%;transform:translateX(-50%);z-index:6;
+  background:var(--side);color:#fff;border-radius:9px;padding:8px 11px;font-size:11.5px;line-height:1.7;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}
+.hs:hover .tip{display:block}
+.tip b{display:block;font-size:12px;margin-bottom:2px}
+.tip i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:6px;font-style:normal}
+.lgd{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.lgd button{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border:1px solid var(--line);border-radius:99px;font-size:11.5px;font-weight:600;color:var(--muted);background:var(--card)}
+.lgd button i{width:9px;height:9px;border-radius:3px}
+.lgd button i.dash{height:0;width:12px;border-radius:0;border-top:2px dashed var(--faint)}
+.lgd button.off{opacity:.38}
+.lgd button.off span{text-decoration:line-through}
+.insights{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.insights span{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:600}
+.spark{display:block;width:100%;max-width:130px;height:22px;margin-top:8px;opacity:.95}
+.xlbls{display:flex;margin-top:4px;font-size:10.5px;color:var(--faint)}
+.xlbls span{flex:1;text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px}
+.donutwrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.donut{width:132px;height:132px;border-radius:99px;position:relative;flex:none}
+.donut::after{content:attr(data-c);position:absolute;inset:18px;background:var(--card);border-radius:99px;display:grid;place-items:center;font-size:13px;font-weight:700;text-align:center;white-space:pre-line}
+
+/* leaderboard podium */
+.podium{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}
+.pod{text-align:center;padding:16px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+.pod .rank{width:34px;height:34px;margin:0 auto 8px;border-radius:99px;display:grid;place-items:center;font-weight:800;font-size:14px}
+.pod.r1 .rank{background:var(--game-soft);color:var(--game)} .pod.r2 .rank,.pod.r3 .rank{background:var(--line2);color:var(--muted)}
+.pod b{display:block;font-size:13.5px} .pod span{font-size:12px;color:var(--muted)}
+
+/* badges */
+.badge-card{display:flex;gap:12px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+.badge-card .bico{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--game-soft)}
+.badge-card b{font-size:13.5px;display:block}
+.badge-card .rule{font-size:11.5px;color:var(--muted);margin-top:2px}
+.badge-card.locked{opacity:.55;filter:grayscale(.9)}
+.badge-card.locked .bico{background:var(--line2)}
+
+/* forms & modal */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px}
+.field input,.field select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);font-size:13.5px}
+.field input:focus,.field select:focus{outline:none;border-color:var(--env);box-shadow:0 0 0 3px var(--env-soft)}
+.field.err input,.field.err select{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
+.field .msg{display:none;margin-top:4px;font-size:12px;color:var(--danger);font-weight:500}
+.field.err .msg{display:block}
+.modal-bg{position:fixed;inset:0;z-index:60;background:rgba(10,20,14,.5);display:none;align-items:flex-end;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+@media(min-width:641px){.modal-bg{align-items:center}}
+.modal{width:min(460px,100%);max-height:88vh;overflow:auto;background:var(--card);border-radius:14px;padding:20px;box-shadow:0 24px 60px rgba(15,35,24,.3)}
+.modal h2{font-size:16px;margin-bottom:2px}
+.modal .sub{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.modal .foot{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+
+.toast{position:fixed;left:50%;bottom:22px;z-index:70;transform:translate(-50%,80px);background:var(--side);color:#fff;
+  padding:11px 18px;border-radius:11px;font-size:13.5px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .25s;max-width:calc(100vw - 32px)}
+.toast.show{transform:translate(-50%,0)}
+
+.note{display:flex;gap:9px;padding:11px 13px;border-radius:10px;font-size:12.5px;line-height:1.45}
+.note.env{background:var(--env-soft);color:#155232}
+.note.warn{background:var(--game-soft);color:#6d3d07}
+.note.dgr{background:var(--danger-soft);color:#8f1d1d}
+.alist{list-style:none}
+.alist li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.alist li:last-child{border-bottom:0}
+.alist .aico{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:13px}
+.alist time{margin-left:auto;flex:none;font-size:11.5px;color:var(--faint)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{padding:5px 12px;border:1px solid var(--line);border-radius:99px;font-size:12px;font-weight:500;color:var(--muted);background:var(--card)}
+.filters button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.hint{font-size:12px;color:var(--faint);margin-top:10px}
+.split{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+</style>
+</head>
+<body>
+<div class="backdrop" id="backdrop"></div>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <span class="logo">E</span>
+      <span><b>EcoSphere</b><small>ESG Platform</small></span>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">Wireframe v2 · offline · demo data</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="iconbtn" id="menuBtn" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="search" role="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="m20 20-3-3"/></svg>Search records, challenges, policies…<kbd>⌘K</kbd></div>
+      <div class="spacer"></div>
+      <div class="persona" id="persona" title="Role-based navigation demo">
+        <button data-p="admin" class="on">Admin</button><button data-p="employee">Employee</button>
+      </div>
+      <button class="iconbtn" id="bellBtn" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a2 2 0 0 0 3.4 0"/></svg><span class="ping"></span></button>
+      <span class="avatar" id="avatar">AR</span>
+    </header>
+
+    <div class="notif" id="notif" aria-label="Notifications panel">
+      <header>Notifications <button id="markRead">Mark all read</button></header>
+      <ul id="notifList"></ul>
+    </div>
+
+    <main class="content" id="view"></main>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" role="dialog" aria-modal="true">
+  <div class="modal" id="modalBox"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+/* =================== STATIC DEMO DATA (wireframe-only) =================== */
+const DATA = {
+  scores:{E:82,S:74,G:88,overall:81,weights:{E:40,S:30,G:30}},
+  trend:{E:[70,72,71,74,76,75,78,77,80,79,81,82],
+         S:[66,68,66,69,71,69,72,70,73,72,73,74],
+         G:[78,80,79,82,83,82,84,83,86,85,87,88]},
+  target:85,
+  deptTrend:{
+    'Manufacturing':[78,79,80,81,82,82,83,83,84,85,85,86],
+    'Corporate':    [76,77,76,78,79,79,80,81,82,82,83,83],
+    'R&D':          [72,73,72,74,75,74,76,76,77,78,78,79],
+    'Sales':        [63,64,65,66,67,66,68,69,70,71,71,72],
+    'Logistics':    [52,54,53,56,58,57,59,60,62,63,64,65],
+  },
+  months:['Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul'],
+  deptScores:[
+    {d:'Manufacturing',E:88,S:76,G:90,t:86},{d:'Corporate',E:79,S:82,G:92,t:83},
+    {d:'R&D',E:80,S:71,G:84,t:79},{d:'Sales',E:66,S:75,G:81,t:72},{d:'Logistics',E:58,S:69,G:77,t:65},
+  ],
+  activity:[
+    {i:'🏅',c:'game-soft',t:"Priya unlocked the 'Carbon Saver' badge",w:'2h ago'},
+    {i:'⚠️',c:'danger-soft',t:'Compliance issue overdue in Logistics',w:'4h ago'},
+    {i:'🌍',c:'env-soft',t:'42 carbon transactions auto-logged from Fleet',w:'6h ago'},
+    {i:'✅',c:'soc-soft',t:"R&D acknowledged 'Anti-Corruption Policy v3'",w:'1d ago'},
+  ],
+  carbonTx:[
+    {ref:'CT-0231',src:'Fleet · Diesel',dept:'Logistics',scope:1,qty:'820 L',f:'2.68 kg/L',co2:'2,196 kg',date:'2026-07-08'},
+    {ref:'CT-0230',src:'Purchase · Steel',dept:'Procurement',scope:3,qty:'4.2 t',f:'1.95 kg/kg',co2:'8,190 kg',date:'2026-07-07'},
+    {ref:'CT-0229',src:'Expense · Air travel',dept:'Sales',scope:3,qty:'2,140 km',f:'0.16 kg/km',co2:'342 kg',date:'2026-07-06'},
+    {ref:'CT-0228',src:'Manufacturing · Grid power',dept:'Manufacturing',scope:2,qty:'9,400 kWh',f:'0.71 kg/kWh',co2:'6,674 kg',date:'2026-07-05'},
+  ],
+  goals:[
+    {n:'Reduce fleet emissions 20%',dept:'Logistics',target:'500 t',cur:'390 t',p:78,due:'2026-12-31',s:['Active','p-env']},
+    {n:'Cut packaging waste',dept:'Manufacturing',target:'120 t',cur:'98 t',p:82,due:'2026-09-30',s:['On track','p-env']},
+    {n:'Office energy −15%',dept:'Corporate',target:'80 t',cur:'80 t',p:100,due:'2026-06-30',s:['Completed','p-soc']},
+  ],
+  scopes:[{n:'Scope 1 — direct + fleet',v:46,pc:25},{n:'Scope 2 — electricity',v:61,pc:33},{n:'Scope 3 — value chain',v:77,pc:42}],
+  monthlyCO2:[21,19,22,18,17,16,18,15,16,14,15,13],
+  csr:[
+    {n:'Tree Plantation Drive',cat:'Community',joined:24,pts:50,ev:true,when:'Jul 20'},
+    {n:'Blood Donation Camp',cat:'Health',joined:18,pts:40,ev:true,when:'Jul 26'},
+    {n:'Beach Cleanup',cat:'Environment',joined:31,pts:60,ev:true,when:'Aug 02'},
+    {n:'ESG Awareness Workshop',cat:'Education',joined:52,pts:30,ev:false,when:'Aug 09'},
+  ],
+  queue:[
+    {e:'Aditi Rao',a:'Tree Plantation Drive',proof:'plantation.jpg',pts:50,done:'2026-07-08',s:'Pending'},
+    {e:'Karan Shah',a:'Beach Cleanup',proof:null,pts:60,done:'2026-07-07',s:'Pending'},
+    {e:'Priya S.',a:'ESG Workshop',proof:'certificate.pdf',pts:30,done:'2026-07-05',s:'Approved'},
+  ],
+  diversity:[['Women in workforce',41],['Women in leadership',28],['Persons with disabilities',4],['Avg training hours / employee',72]],
+  training:[['Manufacturing',88],['Corporate',95],['R&D',81],['Sales',74],['Logistics',69]],
+  policies:[
+    {n:'Anti-Corruption Policy',v:'v3',ack:92,upd:'2026-05-02'},
+    {n:'Code of Conduct',v:'v5',ack:96,upd:'2026-04-11'},
+    {n:'Data Privacy Policy',v:'v2',ack:88,upd:'2026-06-20'},
+    {n:'Environmental Policy',v:'v1',ack:73,upd:'2026-07-01'},
+  ],
+  myAcks:[{n:'Environmental Policy',v:'v1',due:'2026-07-15',done:false},{n:'Data Privacy Policy',v:'v2',due:'2026-07-10',done:false},{n:'Code of Conduct',v:'v5',due:'—',done:true}],
+  audits:[
+    {t:'Q2 Waste Audit',dept:'Manufacturing',by:'S. Nair',date:'2026-06-12',issues:3,s:['Completed','p-soc']},
+    {t:'Vendor Compliance Check',dept:'Procurement',by:'R. Iyer',date:'2026-07-01',issues:1,s:['Under review','p-gov']},
+    {t:'Fleet Safety Audit',dept:'Logistics',by:'A. Mehta',date:'2026-07-09',issues:2,s:['In progress','p-game']},
+  ],
+  issues:[
+    {i:'Missing MSDS sheets on line 3',audit:'Q2 Waste Audit',sev:'High',own:'S. Nair',due:'2026-07-04',s:'Overdue'},
+    {i:'Late vendor ESG disclosure',audit:'Vendor Compliance Check',sev:'Medium',own:'R. Iyer',due:'2026-07-22',s:'Open'},
+    {i:'Fuel log gaps (Apr–May)',audit:'Fleet Safety Audit',sev:'Medium',own:'A. Mehta',due:'2026-07-30',s:'Open'},
+    {i:'Expired fire NOC copy',audit:'Q2 Waste Audit',sev:'Low',own:'S. Nair',due:'2026-06-28',s:'Resolved'},
+  ],
+  challenges:{
+    'Draft':[{t:'Commute Green Week',xp:120,d:'Medium',due:'Jul 25',ev:true}],
+    'Active':[{t:'Sustainability Sprint',xp:200,d:'Hard',due:'Jul 20',ev:true},{t:'Recycle Challenge',xp:80,d:'Easy',due:'Jul 15',ev:false}],
+    'Under Review':[{t:'Paperless Month',xp:150,d:'Medium',due:'Jul 10',ev:true}],
+    'Completed':[{t:'Earth Hour Drive',xp:100,d:'Easy',due:'Jun 30',ev:false}],
+    'Archived':[{t:'Winter Energy Save',xp:90,d:'Easy',due:'Jan 31',ev:false}],
+  },
+  myChallenges:[
+    {c:'Sustainability Sprint',p:65,proof:null,s:'In progress',xp:'—'},
+    {c:'Recycle Challenge',p:100,proof:'recycle-log.pdf',s:'Under review',xp:'—'},
+    {c:'Earth Hour Drive',p:100,proof:'photo.jpg',s:'Approved',xp:'+100'},
+  ],
+  badges:[
+    {i:'🌱',n:'Green Beginner',r:'Earn 100 XP',got:true},
+    {i:'♻️',n:'Carbon Saver',r:'Complete 3 challenges',got:true},
+    {i:'🏆',n:'Sustainability Champion',r:'Earn 2,500 XP',got:true},
+    {i:'🤝',n:'Team Player',r:'Join 5 CSR activities',got:false},
+    {i:'🔥',n:'Streak Master',r:'Complete challenges 3 months in a row',got:false},
+    {i:'⭐',n:'ESG Legend',r:'Reach 10,000 XP',got:false},
+  ],
+  lbEmp:[['Aditi Rao','Corporate',3910],['Priya S.','Manufacturing',3480],['Karan Shah','R&D',2955],['Rohit V.','Logistics',2410],['Sana K.','Sales',2105]],
+  lbDept:[['Manufacturing',4820],['Corporate',4210],['R&D',3505],['Sales',2890],['Logistics',2340]],
+  rewards:[
+    {n:'Extra WFH day',cost:500,stock:12,i:'🏠'},
+    {n:'Eco tote + steel bottle',cost:300,stock:40,i:'🎒'},
+    {n:'Plant a tree in your name',cost:150,stock:0,i:'🌳'},
+    {n:'Lunch with leadership',cost:900,stock:3,i:'🍽️'},
+  ],
+  me:{name:'Aditi Rao',xp:3910,points:640,badges:3,rank:1},
+  departments:[
+    {n:'Manufacturing',c:'MFG',h:'S. Nair',p:'—',emp:134,s:'Active'},
+    {n:'Logistics',c:'LOG',h:'R. Iyer',p:'Manufacturing',emp:58,s:'Active'},
+    {n:'Corporate',c:'COR',h:'A. Mehta',p:'—',emp:41,s:'Active'},
+    {n:'R&D',c:'RND',h:'V. Krishnan',p:'Corporate',emp:37,s:'Active'},
+    {n:'Sales',c:'SLS',h:'N. Gupta',p:'Corporate',emp:52,s:'Active'},
+  ],
+  categories:[['Community','CSR Activity'],['Health','CSR Activity'],['Education','CSR Activity'],['Environment','CSR Activity'],['Energy','Challenge'],['Waste','Challenge'],['Mobility','Challenge']],
+  factors:[
+    {n:'Diesel',scope:1,u:'litre',f:'2.68 kg CO₂e/L',src:'DEFRA 2025'},
+    {n:'Petrol',scope:1,u:'litre',f:'2.31 kg CO₂e/L',src:'DEFRA 2025'},
+    {n:'Grid electricity (IN)',scope:2,u:'kWh',f:'0.71 kg CO₂e/kWh',src:'CEA 2025'},
+    {n:'Steel (purchased)',scope:3,u:'kg',f:'1.95 kg CO₂e/kg',src:'ecoinvent'},
+    {n:'Air travel — short haul',scope:3,u:'km',f:'0.16 kg CO₂e/km',src:'DEFRA 2025'},
+  ],
+  notifs:[
+    {i:'⚠️',bg:'var(--danger-soft)',t:'<b>Compliance issue overdue</b> — “Missing MSDS sheets” passed its due date while Open',w:'4h ago'},
+    {i:'✅',bg:'var(--env-soft)',t:'Your <b>Tree Plantation</b> participation was approved · +50 pts',w:'6h ago'},
+    {i:'🏅',bg:'var(--game-soft)',t:'Badge unlocked: <b>Carbon Saver</b>',w:'1d ago'},
+    {i:'📋',bg:'var(--gov-soft)',t:'Reminder: acknowledge <b>Environmental Policy v1</b> by Jul 15',w:'2d ago'},
+  ],
+};
+
+/* =================== NAV MODEL (mirrors the planned menu tree) =================== */
+const MODULES=[
+  {id:'dashboard',label:'Dashboard',grp:'Overview',icon:'grid',acc:'env',roles:['admin','employee'],tabs:[]},
+  {id:'environmental',label:'Environmental',grp:'Modules',icon:'leaf',acc:'env',roles:['admin'],tabs:[
+    ['transactions','Carbon Transactions'],['goals','Goals'],['envdash','Environmental Dashboard']]},
+  {id:'social',label:'Social',grp:'Modules',icon:'users',acc:'soc',roles:['admin','employee'],tabs:[
+    ['csr','CSR Activities'],['participation','Participations'],['diversity','Diversity & Training']]},
+  {id:'governance',label:'Governance',grp:'Modules',icon:'shield',acc:'gov',roles:['admin','employee'],tabs:[
+    ['policies','Policies'],['acks','Acknowledgements'],['audits','Audits'],['issues','Compliance Issues']]},
+  {id:'gamification',label:'Gamification',grp:'Modules',icon:'trophy',acc:'game',roles:['admin','employee'],tabs:[
+    ['challenges','Challenges'],['mine','My Participation'],['leaderboard','Leaderboard'],['badges','Badges'],['rewards','Rewards']]},
+  {id:'reports',label:'Reporting',grp:'Insights',icon:'doc',acc:'env',roles:['admin'],tabs:[
+    ['summary','ESG Summary'],['environmental','Environmental'],['social','Social'],['governance','Governance'],['builder','Custom Builder']]},
+  {id:'settings',label:'Settings',grp:'Insights',icon:'cog',acc:'env',roles:['admin'],tabs:[
+    ['departments','Departments'],['categories','Categories'],['factors','Emission Factors'],['config','ESG Configuration'],['notifications','Notifications']]},
+];
+const ICONS={
+  grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+  leaf:'M5 21c0-8 6-14 14-14 0 8-6 14-14 14zM5 21c4-4 7-7 10-9',
+  users:'M17 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6M21 20v-2a4 4 0 0 0-3-3.9',
+  shield:'M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6z',
+  trophy:'M8 4h8v4a4 4 0 0 1-8 0zM6 4H4v2a3 3 0 0 0 3 3M18 4h2v2a3 3 0 0 1-3 3M9 15h6M10 15v5M14 15v5M8 20h8',
+  doc:'M7 3h7l5 5v13H7zM14 3v5h5',
+  cog:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M4 12h1M19 12h1M12 4v1M12 19v1M6 6l.7.7M17.3 17.3l.7.7M6 18l.7-.7M17.3 6.7l.7-.7',
+};
+const icon=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${ICONS[n]}"/></svg>`;
+const ACCENT={env:'var(--env)',soc:'var(--soc)',gov:'var(--gov)',game:'var(--game-acc)'};
+const TABBG={env:['var(--env-soft)','var(--env)'],soc:['var(--soc-soft)','var(--soc)'],gov:['var(--gov-soft)','var(--gov)'],game:['var(--game-soft)','var(--game)']};
+
+/* =================== TINY HELPERS =================== */
+let persona='admin';
+const $=s=>document.querySelector(s);
+const pill=(t,c)=>`<span class="pill ${c}">${t}</span>`;
+const chip=t=>`<span class="chip">${t}</span>`;
+const sev=s=>pill(s,s==='High'?'p-dgr':s==='Medium'?'p-game':'p-mut');
+const statusPill=s=>({Pending:['Pending','p-game'],Approved:['Approved','p-env'],Rejected:['Rejected','p-dgr'],Open:['Open','p-game'],Overdue:['Overdue ⏰','p-dgr'],Resolved:['Resolved','p-env'],'In progress':['In progress','p-soc'],'Under review':['Under review','p-gov']}[s]?pill(...({Pending:['Pending','p-game'],Approved:['Approved','p-env'],Rejected:['Rejected','p-dgr'],Open:['Open','p-game'],Overdue:['Overdue ⏰','p-dgr'],Resolved:['Resolved','p-env'],'In progress':['In progress','p-soc'],'Under review':['Under review','p-gov']}[s])):pill(s,'p-mut'));
+const card=(h,body,sub='')=>`<section class="card">${h?`<h2>${h}</h2>`:''}${sub?`<p class="sub">${sub}</p>`:''}${body}</section>`;
+const table=(head,rows)=>`<div class="tscroll"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+const spark=(vals,color)=>{
+  const hi=Math.max(...vals),lo=Math.min(...vals),r=hi-lo||1,w=60/(vals.length-1);
+  const pts=vals.map((v,i)=>`${(i*w).toFixed(1)},${(14-((v-lo)/r)*11).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 60 16" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="0,16 ${pts} 60,16" fill="${color}" opacity=".1"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+};
+const kpi=(l,v,acc,delta,suffix=' / 100',sp)=>`<div class="kpi" style="--acc:${acc}"><p class="lbl">${l}</p><p class="val">${v}<small>${suffix}</small></p>${delta?`<p class="delta ${delta[0]}">${delta[0]==='up'?'▲':'▼'} ${delta[1]}</p>`:''}${sp?spark(sp,acc):''}</div>`;
+const meterRow=(l,v,acc='var(--env)')=>`<div class="mlabeled" style="--acc:${acc}"><div class="t"><span>${l}</span><b>${v}%</b></div><div class="meter"><i style="width:${v}%"></i></div></div>`;
+const mrow=(v,acc='var(--env)')=>`<div class="mrow" style="--acc:${acc}"><div class="meter" style="flex:1"><i style="width:${v}%"></i></div><span class="num mut" style="font-size:12px">${v}</span></div>`;
+const toggle=(title,sub,on=true)=>`<div class="toggle" data-toggle><div class="tl"><b>${title}</b>${sub?`<span>${sub}</span>`:''}</div><span class="sw ${on?'on':''}"></span></div>`;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* multi-series ESG trend chart: pillar lines + weighted overall + target + hover tooltips */
+const chartState={overall:true,E:true,S:true,G:true,target:true,mode:'trend'};
+const overallTrend=()=>DATA.trend.E.map((v,i)=>Math.round(v*.4+DATA.trend.S[i]*.3+DATA.trend.G[i]*.3));
+/* box-plot mode: per-month distribution of department total scores */
+function boxChart(Y){
+  const names=Object.keys(DATA.deptTrend), n=12, w=100/n;
+  const months=Array.from({length:n},(_,i)=>{
+    const vals=names.map(d=>DATA.deptTrend[d][i]);
+    const s=[...vals].sort((a,b)=>a-b);
+    const best=names[vals.indexOf(s[4])], worst=names[vals.indexOf(s[0])];
+    return {min:s[0],q1:(s[0]+s[1])/2,med:s[2],q3:(s[3]+s[4])/2,max:s[4],best,worst};
+  });
+  const bw=w*.48;
+  const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="Department score spread by month" style="height:200px">
+    ${[60,70,80,90].map(v=>`<line x1="0" y1="${Y(v)}" x2="100" y2="${Y(v)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+    ${chartState.target?`<line x1="0" y1="${Y(DATA.target)}" x2="100" y2="${Y(DATA.target)}" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>`:''}
+    <polyline points="${months.map((m,i)=>`${((i+.5)*w).toFixed(1)},${Y(m.med).toFixed(1)}`).join(' ')}" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity=".45" vector-effect="non-scaling-stroke"/>
+    ${months.map((m,i)=>{const cx=(i+.5)*w;return `
+      <line x1="${cx}" y1="${Y(m.min)}" x2="${cx}" y2="${Y(m.max)}" stroke="var(--env)" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
+      <line x1="${cx-bw*.3}" y1="${Y(m.max)}" x2="${cx+bw*.3}" y2="${Y(m.max)}" stroke="var(--env)" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
+      <line x1="${cx-bw*.3}" y1="${Y(m.min)}" x2="${cx+bw*.3}" y2="${Y(m.min)}" stroke="var(--env)" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
+      <rect x="${cx-bw/2}" y="${Y(m.q3)}" width="${bw}" height="${Y(m.q1)-Y(m.q3)}" rx=".6" fill="var(--env)" fill-opacity=".16" stroke="var(--env)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+      <line x1="${cx-bw/2}" y1="${Y(m.med)}" x2="${cx+bw/2}" y2="${Y(m.med)}" stroke="var(--ink)" stroke-width="2" vector-effect="non-scaling-stroke"/>`;}).join('')}
+  </svg>`;
+  const dot=c=>`<i style="background:${c}"></i>`;
+  const hs=months.map((m,i)=>{
+    const clamp=i<2?'left:0;transform:none':i>9?'left:auto;right:0;transform:none':'';
+    return `<div class="hs" style="left:${i*w}%;width:${w}%">
+      <div class="tip" style="${clamp}"><b>${DATA.months[i]} ’26 · spread ${m.max-m.min} pts</b>
+        ${dot('var(--env)')}Best: ${m.best} <b style="display:inline">${m.max}</b><br>
+        ${dot('var(--ink)')}Median ${m.med} &nbsp; ${dot('var(--danger)')}Low: ${m.worst} ${m.min}
+      </div></div>`;}).join('');
+  const lgd=`<div class="lgd">
+    <button style="cursor:default"><i style="background:var(--env);opacity:.3;outline:1.5px solid var(--env)"></i><span>Middle 50% of departments</span></button>
+    <button style="cursor:default"><i style="background:var(--ink);height:3px;border-radius:1px"></i><span>Median</span></button>
+    <button style="cursor:default"><i style="background:var(--env);width:2px;height:12px"></i><span>Best ↔ worst range</span></button>
+    <button data-sr="target" class="${chartState.target?'':'off'}"><i class="dash"></i><span>Target ${DATA.target}</span></button>
+  </div>`;
+  const first=months[0],last=months[11];
+  const insights=`<div class="insights">
+    <span style="background:var(--env-soft);color:var(--env)">Dept gap narrowed ${first.max-first.min} → ${last.max-last.min} pts</span>
+    <span style="background:var(--env-soft);color:var(--env)">Median up ${last.med-first.med} pts YTD</span>
+    <span style="background:var(--danger-soft);color:var(--danger)">${last.worst} is the outlier at ${last.min}</span>
+    <span style="background:var(--line2);color:var(--muted)">${last.best} leads at ${last.max}</span>
+  </div>`;
+  return {svg,hs,lgd,insights};
+}
+
+function trendChart(){
+  const {E,S,G}=DATA.trend, O=overallTrend(), n=O.length;
+  const Y=v=>46-((v-55)/40)*44;                       // fixed 55–95 scale
+  const X=i=>i*(100/(n-1));
+  const modeBar=`<div class="filters" style="margin-bottom:12px">
+    <button data-cm="trend" class="${chartState.mode==='trend'?'on':''}">Pillar trend</button>
+    <button data-cm="box" class="${chartState.mode==='box'?'on':''}">Department spread</button>
+  </div>`;
+  if(chartState.mode==='box'){
+    const b=boxChart(Y);
+    return `${modeBar}<div class="tchart">
+        <div class="ylbls">${[60,70,80,90].map(v=>`<span style="top:${(Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
+        ${b.svg}<div class="hotspots">${b.hs}</div>
+      </div>
+      <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
+      ${b.lgd}${b.insights}`;
+  }
+  const line=(vals,color,w,dash='')=>`<polyline points="${vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"
+      fill="none" stroke="${color}" stroke-width="${w}" ${dash} stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+  const series=[
+    ['E','Environmental','var(--env)',E],['S','Social','var(--soc)',S],['G','Governance','var(--gov)',G]];
+  const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="ESG scores, 12 months" style="height:200px">
+    ${[60,70,80,90].map(v=>`<line x1="0" y1="${Y(v)}" x2="100" y2="${Y(v)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+    ${chartState.target?`<line x1="0" y1="${Y(DATA.target)}" x2="100" y2="${Y(DATA.target)}" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"/>`:''}
+    ${chartState.overall?`<polygon points="0,48 ${O.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')} 100,48" fill="var(--ink)" opacity=".05"/>`:''}
+    ${series.filter(s=>chartState[s[0]]).map(s=>line(s[3],s[2],1.6)).join('')}
+    ${chartState.overall?line(O,'var(--ink)',2.6):''}
+  </svg>`;
+  const dot=c=>`<i style="background:${c}"></i>`;
+  const hs=O.map((_,i)=>{
+    const w=100/(n-1);
+    const left=Math.max(0,X(i)-w/2), width=Math.min(100-left,w);
+    const clamp=i<2?'left:0;transform:none':i>n-3?'left:auto;right:0;transform:none':'';
+    return `<div class="hs" style="left:${left}%;width:${width}%">
+      <div class="tip" style="${clamp}"><b>${DATA.months[i]} ’26</b>
+        ${dot('var(--ink)')}Overall <b style="display:inline">${O[i]}</b><br>
+        ${dot('var(--env)')}E ${E[i]} &nbsp;${dot('var(--soc)')}S ${S[i]} &nbsp;${dot('var(--gov)')}G ${G[i]}
+      </div></div>`;}).join('');
+  const lgd=`<div class="lgd" role="group" aria-label="Toggle series">
+    ${[['overall','Overall','var(--ink)'],['E','Environmental','var(--env)'],['S','Social','var(--soc)'],['G','Governance','var(--gov)']]
+      .map(([k,l,c])=>`<button data-sr="${k}" class="${chartState[k]?'':'off'}"><i style="background:${c}"></i><span>${l}</span></button>`).join('')}
+    <button data-sr="target" class="${chartState.target?'':'off'}"><i class="dash"></i><span>Target ${DATA.target}</span></button>
+  </div>`;
+  const up=O.filter((v,i)=>i&&v>O[i-1]).length;
+  const gains=series.map(s=>[s[1],s[3][n-1]-s[3][0],s[2]]).sort((a,b)=>b[1]-a[1]);
+  const lag=series.reduce((a,s)=>s[3][n-1]<a[3][n-1]?s:a);
+  const gap=DATA.target-O[n-1];
+  const insights=`<div class="insights">
+    <span style="background:var(--env-soft);color:var(--env)">▲ Improved ${up} of ${n-1} months</span>
+    <span style="background:color-mix(in srgb,${gains[0][2]} 11%,white);color:${gains[0][2]}">${gains[0][0]} drives growth · +${gains[0][1]} pts YTD</span>
+    <span style="background:color-mix(in srgb,${lag[2]} 11%,white);color:${lag[2]}">${lag[1]} lags at ${lag[3][n-1]} · +${lag[3][n-1]-lag[3][0]} YTD</span>
+    <span style="background:var(--line2);color:var(--muted)">${gap>0?gap+' pts to '+DATA.target+' target':'Target reached 🎉'}</span>
+  </div>`;
+  return `${modeBar}<div class="tchart">
+      <div class="ylbls">${[60,70,80,90].map(v=>`<span style="top:${(Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
+      ${svg}<div class="hotspots">${hs}</div>
+    </div>
+    <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
+    ${lgd}${insights}`;
+}
+function barChart(vals,color='var(--env)',max){
+  const hi=max||Math.max(...vals),w=100/vals.length;
+  return `<svg class="chart" viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label="bar chart">
+    ${[10,20,30].map(y=>`<line x1="0" y1="${y}" x2="100" y2="${y}" stroke="var(--line2)" stroke-width=".4"/>`).join('')}
+    ${vals.map((v,i)=>{const h=(v/hi)*34,x=i*w+w*.22;return `<rect x="${x}" y="${38-h}" width="${w*.56}" height="${h}" rx="1.2" fill="${color}"/>`}).join('')}
+  </svg>`;
+}
+
+/* =================== VIEWS =================== */
+const V={};
+
+V.dashboard=()=>{
+  if(persona==='employee'){
+    const m=DATA.me;
+    return `
+    <div class="pagehead"><h1>Good morning, ${m.name.split(' ')[0]} 👋</h1><p>Your sustainability snapshot — XP, challenges and pending actions.</p></div>
+    <div class="grid g4">
+      ${kpi('My XP',m.xp.toLocaleString(),'var(--game-acc)',['up','120 this week'],'')}
+      ${kpi('Redeemable points',m.points,'var(--env)',null,' pts')}
+      ${kpi('Badges earned',m.badges,'var(--gov)',null,' / 6')}
+      ${kpi('Leaderboard rank','#'+m.rank,'var(--soc)',['up','2 places'],'')}
+    </div>
+    <div class="split">
+      ${card('My active challenges',table(['Challenge','Progress','Status'],DATA.myChallenges.slice(0,2).map(c=>`<tr><td class="b">${c.c}</td><td style="min-width:150px">${mrow(c.p,'var(--game-acc)')}</td><td>${statusPill(c.s)}</td></tr>`)),'Finish before the deadline to earn XP')}
+      ${card('Pending policy acknowledgements',`<ul class="alist">${DATA.myAcks.filter(a=>!a.done).map(a=>`<li><span class="aico" style="background:var(--gov-soft)">📋</span><span><b>${a.n}</b> <span class="mono mut">${a.v}</span><br><span class="mut" style="font-size:12px">Due ${a.due}</span></span><button class="btn gov sm" data-act="ack" style="margin-left:auto">Acknowledge</button></li>`).join('')}</ul>`,'Required by Governance — reminders are sent automatically')}
+    </div>`;
+  }
+  const s=DATA.scores;
+  return `
+  <div class="pagehead"><h1>Organization Dashboard</h1><p>Live ESG posture — every number recomputes as records change.</p>
+    <div class="act"><button class="btn out sm" data-act="export">Export snapshot</button><a class="btn pri sm" href="#/reports/summary">View reports</a></div></div>
+  <div class="grid g4">
+    ${kpi('Environmental',s.E,'var(--env)',['up','4 pts vs last qtr'],undefined,DATA.trend.E)}
+    ${kpi('Social',s.S,'var(--soc)',['down','1 pt vs last qtr'],undefined,DATA.trend.S)}
+    ${kpi('Governance',s.G,'var(--gov)',['up','2 pts vs last qtr'],undefined,DATA.trend.G)}
+    ${kpi('Overall ESG',s.overall,'var(--ink)',['up','3 pts vs last qtr'],undefined,overallTrend())}
+  </div>
+  ${card('ESG performance — 12 months',trendChart(),`Weighted E ${s.weights.E}% · S ${s.weights.S}% · G ${s.weights.G}% (configurable) — hover for monthly detail, click legend to isolate a pillar`)}
+  <div class="split">
+    ${card('Department scores',table(['Department','E','S','G','Total'],DATA.deptScores.map(d=>`<tr><td class="b">${d.d}</td><td class="num">${d.E}</td><td class="num">${d.S}</td><td class="num">${d.G}</td><td style="min-width:130px">${mrow(d.t,d.t<70?'var(--game-acc)':'var(--env)')}</td></tr>`)),'Ranked by total score — feeds the Overall ESG Score')}
+    ${card('Recent activity',`<ul class="alist">${DATA.activity.map(a=>`<li><span class="aico" style="background:var(--${a.c})">${a.i}</span><span>${a.t}</span><time>${a.w}</time></li>`).join('')}</ul>`)}
+  </div>
+  ${card('Needs attention',`
+      <div class="note dgr">⚠️ <span><b>1 compliance issue overdue</b> — “Missing MSDS sheets”, owner S. Nair, due Jul 04. Auto-flagged by the scheduler.</span></div>
+      <div class="note warn" style="margin-top:9px">⏳ <span><b>2 participations awaiting approval</b> — one is missing proof and cannot be approved while Evidence Requirement is on.</span></div>
+      <div class="note env" style="margin-top:9px">🎯 <span><b>Goal at risk</b> — “Reduce fleet emissions 20%” is at 78% with 5 months left.</span></div>`)}`;
+};
+
+/* ---- Environmental ---- */
+V.environmental=(sub)=>({transactions,goals,envdash:envDash}[sub]||transactions)();
+const transactions=()=>`
+  ${card('Carbon Transactions',`
+    <div class="filters" style="margin-bottom:13px">
+      <button class="on">All sources</button><button>Purchase</button><button>Manufacturing</button><button>Expense</button><button>Fleet</button>
+    </div>
+    ${table(['Ref','Source record','Department','Scope','Quantity','Emission factor','CO₂e','Date'],
+      DATA.carbonTx.map(t=>`<tr><td class="mono">${t.ref}</td><td class="b">${t.src}</td><td>${t.dept}</td><td>${chip('Scope '+t.scope)}</td><td class="num">${t.qty}</td><td class="mut">${t.f}</td><td class="b num">${t.co2}</td><td class="mut">${t.date}</td></tr>`))}
+    <p class="hint">✦ Auto Emission Calculation is <b>ON</b> — rows are generated from linked ERP records × emission factor; no manual entry.</p>`,
+    'Every operational record becomes a carbon transaction automatically')}`;
+const goals=()=>`
+  <div class="grid g3">
+    ${kpi('Active goals','3','var(--env)',null,'')}
+    ${kpi('On track / completed','2','var(--env)',null,' of 3')}
+    ${kpi('Avg progress','87','var(--env)',null,'%')}
+  </div>
+  ${card('Sustainability goals',`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn pri sm" data-act="newgoal">+ New goal</button></div>
+    ${table(['Goal','Department','Target CO₂','Current','Progress','Deadline','Status'],
+      DATA.goals.map(g=>`<tr><td class="b">${g.n}</td><td>${g.dept}</td><td class="num">${g.target}</td><td class="num">${g.cur}</td><td style="min-width:140px">${mrow(g.p)}</td><td class="mut">${g.due}</td><td>${pill(...g.s)}</td></tr>`))}`,
+    'Targets tracked against live carbon transactions')}`;
+const envDash=()=>`
+  <div class="grid g3">
+    ${kpi('YTD emissions','184','var(--env)',['down','9% vs last year'],' tCO₂e')}
+    ${kpi('vs annual target','76','var(--env)',null,'% used')}
+    ${kpi('Intensity','2.1','var(--env)',['down','0.3'],' t / employee')}
+  </div>
+  <div class="split">
+    ${card('Monthly emissions (tCO₂e)',barChart(DATA.monthlyCO2)+`<div class="xlbls">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>`)}
+    ${card('Emissions by scope',`
+      <div class="donutwrap">
+        <div class="donut" data-c="184 t\nYTD" style="background:conic-gradient(var(--env) 0 25%,var(--soc) 25% 58%,var(--gov) 58% 100%)"></div>
+        <div style="flex:1;min-width:180px">${DATA.scopes.map((s,i)=>meterRow(s.n,s.pc,[ 'var(--env)','var(--soc)','var(--gov)'][i])).join('')}</div>
+      </div>`)}
+  </div>
+  ${card('Department carbon tracking',table(['Department','Fleet','Purchase','Mfg','Expense','Total tCO₂e'],
+    [['Logistics','38.2','6.1','—','2.4','46.7'],['Manufacturing','4.5','21.9','30.8','1.2','58.4'],['Procurement','—','41.0','—','0.8','41.8'],['Sales','8.9','1.2','—','7.4','17.5']]
+    .map(r=>`<tr>${r.map((c,i)=>`<td class="${i===0?'b':i===5?'b num':'num mut'}">${c}</td>`).join('')}</tr>`)),'Where each department\'s footprint comes from')}`;
+
+/* ---- Social ---- */
+V.social=(sub)=>({csr,participation,diversity}[sub]||csr)();
+const csr=()=>`
+  ${card('CSR Activities',`
+    <div class="filters" style="margin-bottom:13px"><button class="on">All</button><button>Community</button><button>Health</button><button>Education</button><button>Environment</button></div>
+    <div class="grid gcards">
+      ${DATA.csr.map(a=>`<div class="card" style="box-shadow:none">
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:6px">${pill(a.cat,'p-soc')}${a.ev?chip('📎 evidence required'):''}</div>
+        <b style="font-size:14px">${a.n}</b>
+        <p class="mut" style="font-size:12.5px;margin:5px 0 12px">${a.when} · ${a.joined} joined · earns <b>${a.pts} pts</b></p>
+        <button class="btn soc sm" data-act="join">Join activity</button>
+      </div>`).join('')}
+    </div>
+    ${persona==='admin'?'<div style="margin-top:13px"><button class="btn out sm">+ New activity</button></div>':''}`,
+    'Company social initiatives — participation earns points')}`;
+const participation=()=>persona==='employee'
+  ? card('My participations',table(['Activity','Completed','Proof','Points','Status'],
+      DATA.queue.filter(q=>q.e==='Aditi Rao'||q.s==='Approved').map(q=>`<tr><td class="b">${q.a}</td><td class="mut">${q.done}</td><td>${q.proof?`<span class="mono">${q.proof}</span>`:'<button class="btn out sm" data-act="upload">Upload proof</button>'}</td><td class="num">${q.pts}</td><td>${statusPill(q.s)}</td></tr>`)),
+      'Approval decisions trigger notifications automatically')
+  : card('Participation approvals',`
+    ${table(['Employee','Activity','Completed','Proof','Points','Status','Decision'],
+      DATA.queue.map(q=>{
+        const noProof=!q.proof;
+        return `<tr><td class="b">${q.e}</td><td>${q.a}</td><td class="mut">${q.done}</td>
+          <td>${q.proof?`<span class="mono">${q.proof}</span>`:pill('proof missing','p-dgr')}</td>
+          <td class="num">${q.pts}</td><td>${statusPill(q.s)}</td>
+          <td>${q.s==='Pending'?`<button class="btn pri sm" data-act="approve" ${noProof?'disabled title="Evidence Requirement is ON — attach proof before approving"':''}>Approve</button> <button class="btn out sm" data-act="reject">Reject</button>`:'—'}</td></tr>`;
+      }))}
+    <p class="hint">🔒 Evidence Requirement is <b>ON</b> — the approve action stays disabled until a proof file is attached (enforced server-side in the real build).</p>`,
+    'CSR participation queue — points are awarded on approval');
+const diversity=()=>`
+  <div class="split">
+    ${card('Diversity metrics',DATA.diversity.map(d=>meterRow(d[0],d[1],'var(--soc)')).join(''))}
+    ${card('Mandatory training completion by department',DATA.training.map(t=>meterRow(t[0],t[1],t[1]<75?'var(--game-acc)':'var(--soc)')).join(''),'Amber = below the 75% threshold')}
+  </div>`;
+
+/* ---- Governance ---- */
+V.governance=(sub)=>({policies,acks,audits,issues}[sub]||policies)();
+const policies=()=>card('ESG Policies',`
+  ${persona==='admin'?'<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn gov sm">+ New policy</button></div>':''}
+  ${table(['Policy','Version','Updated','Acknowledged','',''],
+    DATA.policies.map(p=>`<tr><td class="b">${p.n}</td><td class="mono">${p.v}</td><td class="mut">${p.upd}</td><td style="min-width:140px">${mrow(p.ack,p.ack<80?'var(--game-acc)':'var(--gov)')}</td><td><button class="btn out sm">View</button></td><td>${persona==='employee'&&p.ack<95?'<button class="btn gov sm" data-act="ack">Acknowledge</button>':''}</td></tr>`))}`,
+  'Acknowledgement coverage per policy — reminders go out automatically');
+const acks=()=>persona==='employee'
+  ? card('My acknowledgements',`<ul class="alist">${DATA.myAcks.map(a=>`<li><span class="aico" style="background:var(--gov-soft)">📋</span><span><b>${a.n}</b> <span class="mono mut">${a.v}</span><br><span class="mut" style="font-size:12px">${a.done?'Acknowledged':'Due '+a.due}</span></span>${a.done?'<span style="margin-left:auto">'+pill('Done','p-env')+'</span>':'<button class="btn gov sm" data-act="ack" style="margin-left:auto">Acknowledge</button>'}</li>`).join('')}</ul>`,'One acknowledgement per employee per policy version')
+  : card('Policy acknowledgements',table(['Employee','Policy','Version','Acknowledged on'],
+      [['Aditi Rao','Anti-Corruption Policy','v3','2026-07-04'],['Karan Shah','Code of Conduct','v5','2026-07-02'],['Priya S.','Data Privacy Policy','v2','2026-06-28'],['Rohit V.','Environmental Policy','v1',null]]
+      .map(r=>`<tr><td class="b">${r[0]}</td><td>${r[1]}</td><td class="mono">${r[2]}</td><td>${r[3]||pill('Pending reminder sent','p-game')}</td></tr>`)),'Tracked per employee per policy version');
+const audits=()=>card('Audits',`
+  ${persona==='admin'?'<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn gov sm">+ New audit</button></div>':''}
+  ${table(['Audit','Department','Auditor','Date','Linked issues','Status'],
+    DATA.audits.map(a=>`<tr><td class="b">${a.t}</td><td>${a.dept}</td><td>${a.by}</td><td class="mut">${a.date}</td><td><a href="#/governance/issues" style="color:var(--gov);font-weight:600">${a.issues} issue${a.issues>1?'s':''} →</a></td><td>${pill(...a.s)}</td></tr>`))}`,
+  'Each audit can raise linked compliance issues');
+const issues=()=>card('Compliance Issues',`
+  ${table(['Issue','From audit','Severity','Owner','Due date','Status'],
+    DATA.issues.map(i=>`<tr class="${i.s==='Overdue'?'overdue':''}"><td class="b">${i.i}</td><td class="mut">${i.audit}</td><td>${sev(i.sev)}</td><td>${i.own}</td><td class="${i.s==='Overdue'?'b':'mut'}">${i.due}</td><td>${statusPill(i.s)}</td></tr>`))}
+  <p class="hint">⏰ Every issue must have an <b>owner and a due date</b>. Issues past due while still Open are auto-flagged by the daily scheduler and pushed to the notification system.</p>`,
+  'Governance violations — ownership is mandatory');
+
+/* ---- Gamification ---- */
+V.gamification=(sub)=>({challenges,mine,leaderboard,badges,rewards}[sub]||challenges)();
+const KCOL={'Draft':'var(--faint)','Active':'var(--env)','Under Review':'var(--gov)','Completed':'var(--soc)','Archived':'var(--faint)'};
+const challenges=()=>card('Challenge lifecycle',`
+  ${persona==='admin'?'<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn game sm">+ New challenge</button></div>':''}
+  <div class="kanban">
+    ${Object.entries(DATA.challenges).map(([col,items])=>`
+      <div class="kcol"><h3><span class="dot" style="background:${KCOL[col]}"></span>${col}<span class="n">${items.length}</span></h3>
+        ${items.map(c=>`<div class="kcard"><p class="t">${c.t}</p>
+          <div class="meta">${pill(c.xp+' XP','p-game')}${chip(c.d)}${c.ev?chip('📎 evidence'):''}</div>
+          <p class="mut" style="font-size:11.5px;margin-bottom:8px">Deadline ${c.due}</p>
+          ${col==='Active'?`<button class="btn game sm" data-act="joinch">Join</button>`:''}
+          ${persona==='admin'&&col==='Draft'?`<button class="btn out sm" data-act="activate">Activate →</button>`:''}
+          ${persona==='admin'&&col==='Under Review'?`<button class="btn pri sm" data-act="complete">Mark completed →</button>`:''}
+        </div>`).join('')||'<div class="kempty">No challenges</div>'}
+      </div>`).join('')}
+  </div>
+  <p class="hint">Lifecycle: Draft → Active → Under Review → Completed · Archive from any state. Swipe/scroll horizontally on mobile.</p>`,
+  'Full status flow with actions at each stage');
+const mine=()=>card('My challenge participation',
+  table(['Challenge','Progress','Proof','Status','XP awarded'],
+    DATA.myChallenges.map(c=>`<tr><td class="b">${c.c}</td><td style="min-width:150px">${mrow(c.p,'var(--game-acc)')}</td><td>${c.proof?`<span class="mono">${c.proof}</span>`:'<button class="btn out sm" data-act="upload">Upload proof</button>'}</td><td>${statusPill(c.s)}</td><td class="b num" style="color:var(--env)">${c.xp}</td></tr>`))
+  +'<p class="hint">XP lands the moment an admin approves — and badges auto-award when unlock rules are met.</p>',
+  'Progress, proof and XP for challenges you joined');
+const leaderboard=()=>`
+  ${card('Leaderboard',`
+    <div class="filters" style="margin-bottom:14px"><button class="on" data-lb="emp">Employees</button><button data-lb="dept">Departments</button><span class="chip" style="margin-left:auto">This quarter</span></div>
+    <div class="podium" style="margin-bottom:14px">
+      ${DATA.lbEmp.slice(0,3).map((p,i)=>`<div class="pod r${i+1}"><span class="rank">${i+1}</span><b>${p[0]}</b><span>${p[1]} · ${p[2].toLocaleString()} XP</span></div>`).join('')}
+    </div>
+    ${table(['Rank','Name','Department','XP'],DATA.lbEmp.map((p,i)=>`<tr><td class="b num">#${i+1}</td><td class="b">${p[0]}</td><td class="mut">${p[1]}</td><td class="b num">${p[2].toLocaleString()}</td></tr>`))}`,
+    'Top performers — switch between employee and department rankings')}`;
+const badges=()=>card('Badges',`
+  <div class="grid gcards">
+    ${DATA.badges.map(b=>`<div class="badge-card ${b.got?'':'locked'}"><span class="bico">${b.got?b.i:'🔒'}</span><span><b>${b.n}</b><span class="rule">${b.r}</span>${b.got?pill('Earned','p-env'):pill('Locked','p-mut')}</span></div>`).join('')}
+  </div>
+  <p class="hint">✦ Badge Auto-Award is <b>ON</b> — a badge is assigned the moment your XP or completed-challenge count satisfies its unlock rule.</p>`,
+  'Unlock rules are visible so employees know what to aim for');
+const rewards=()=>`
+  <div class="note env" style="align-items:center">💰 <span><b>Your balance: ${DATA.me.points} pts</b> — redeeming deducts points instantly, subject to stock.</span></div>
+  ${card('Rewards catalog',`<div class="grid gcards">
+    ${DATA.rewards.map(r=>{
+      const out=r.stock===0, poor=DATA.me.points<r.cost;
+      return `<div class="card" style="box-shadow:none;display:flex;flex-direction:column">
+        <div style="font-size:26px">${r.i}</div>
+        <b style="margin:7px 0 3px;font-size:14px">${r.n}</b>
+        <span class="mut" style="font-size:12px">${out?pill('Out of stock','p-dgr'):r.stock+' in stock'}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+          ${pill(r.cost+' pts','p-game')}
+          <button class="btn pri sm" data-act="redeem" data-cost="${r.cost}" ${out||poor?'disabled':''} title="${out?'Out of stock':poor?'Not enough points':''}">Redeem</button>
+        </div>
+        ${!out&&poor?`<p style="font-size:11px;color:var(--danger);margin-top:6px">Needs ${r.cost-DATA.me.points} more pts</p>`:''}
+      </div>`}).join('')}
+  </div>`)}`;
+
+/* ---- Reports ---- */
+V.reports=(sub)=>({summary:rsummary,environmental:renv,social:rsoc,governance:rgov,builder}[sub]||rsummary)();
+const exportRow=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn pri sm" data-act="export">Generate</button><button class="btn out sm" data-act="export">PDF</button><button class="btn out sm" data-act="export">Excel</button><button class="btn out sm" data-act="export">CSV</button></div>`;
+const rsummary=()=>`
+  <div class="grid g4">
+    ${kpi('Environmental',DATA.scores.E,'var(--env)')}${kpi('Social',DATA.scores.S,'var(--soc)')}${kpi('Governance',DATA.scores.G,'var(--gov)')}${kpi('Overall ESG',DATA.scores.overall,'var(--ink)')}
+  </div>
+  ${card('ESG Summary','<div class="tscroll"><table><thead><tr><th>Department</th><th>E</th><th>S</th><th>G</th><th>Total</th></tr></thead><tbody>'+DATA.deptScores.map(d=>`<tr><td class="b">${d.d}</td><td class="num">${d.E}</td><td class="num">${d.S}</td><td class="num">${d.G}</td><td class="b num">${d.t}</td></tr>`).join('')+'</tbody></table></div>'+exportRow,'Executive overview — all scores with department comparison')}`;
+const renv=()=>card('Environmental Report',table(['Scope','Emissions (YTD)','Share'],DATA.scopes.map(s=>`<tr><td class="b">${s.n}</td><td class="num">${s.v} t</td><td class="num">${s.pc}%</td></tr>`))+exportRow,'Emissions by scope, goal progress and source breakdown');
+const rsoc=()=>card('Social Report',table(['Metric','Value'],[['Women in workforce','41%'],['Women in leadership','28%'],['Training completion','82%'],['CSR participation','67%'],['Total volunteer hours','1,240']].map(r=>`<tr><td class="b">${r[0]}</td><td class="num">${r[1]}</td></tr>`))+exportRow,'Diversity, participation and training');
+const rgov=()=>card('Governance Report',table(['Metric','Value'],[['Policy acknowledgement','91%'],['Audits this quarter','4'],['Open compliance issues','2 (1 overdue)'],['Resolved this quarter','7'],['Avg resolution time','9 days']].map(r=>`<tr><td class="b">${r[0]}</td><td class="num">${r[1]}</td></tr>`))+exportRow,'Policies, audits and compliance posture');
+const builder=()=>card('Custom Report Builder',`
+  <div class="grid g3">
+    ${[['Date range',['This quarter','This month','This year','Custom…']],['Department',['All departments','Manufacturing','Logistics','Corporate','R&D','Sales']],['Module',['All modules','Environmental','Social','Governance','Gamification']],['Employee',['All employees','Aditi Rao','Karan Shah','Priya S.']],['Challenge',['All challenges','Sustainability Sprint','Recycle Challenge']],['ESG category',['All categories','Emissions','CSR','Policies','Audits']]]
+      .map(([l,opts])=>`<div class="field" style="margin-bottom:0"><label>${l}</label><select>${opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`).join('')}
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">
+    <button class="btn pri sm" data-act="run">▶ Run report</button>
+    <button class="btn out sm" data-act="export">PDF</button><button class="btn out sm" data-act="export">Excel</button><button class="btn out sm" data-act="export">CSV</button>
+  </div>
+  <div id="preview" style="margin-top:16px"></div>`,
+  'Combine any filters, preview, then export');
+
+/* ---- Settings ---- */
+V.settings=(sub)=>({departments,categories,factors,config,notifications}[sub]||departments)();
+const departments=()=>card('Departments',`
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn pri sm">+ New department</button></div>
+  ${table(['Name','Code','Head','Parent','Employees','Status'],DATA.departments.map(d=>`<tr><td class="b">${d.n}</td><td class="mono">${d.c}</td><td>${d.h}</td><td class="mut">${d.p}</td><td class="num">${d.emp}</td><td>${pill(d.s,'p-env')}</td></tr>`))}`,
+  'Org hierarchy and ESG ownership');
+const categories=()=>card('Categories',`
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn pri sm">+ New category</button></div>
+  ${table(['Name','Type','Status'],DATA.categories.map(c=>`<tr><td class="b">${c[0]}</td><td>${pill(c[1],c[1]==='Challenge'?'p-game':'p-soc')}</td><td>${pill('Active','p-env')}</td></tr>`))}`,
+  'Shared across CSR activities and challenges');
+const factors=()=>card('Emission Factors',`
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="btn pri sm">+ New factor</button></div>
+  ${table(['Name','Scope','Unit','Factor','Source'],DATA.factors.map(f=>`<tr><td class="b">${f.n}</td><td>${chip('Scope '+f.scope)}</td><td>${f.u}</td><td class="b num">${f.f}</td><td class="mut">${f.src}</td></tr>`))}
+  <p class="hint">🔌 Seeded locally from EPA / DEFRA / IPCC datasets at install — no live API needed, demo works fully offline.</p>`,
+  'Master data used by Auto Emission Calculation');
+const config=()=>`
+  <div class="split">
+    ${card('ESG score weights',`
+      <div id="weights">
+        ${[['E','Environmental','env'],['S','Social','soc'],['G','Governance','gov']].map(([k,l,c])=>`
+          <div class="mlabeled"><div class="t"><span>${l}</span><b id="w${k}">${DATA.scores.weights[k]}%</b></div>
+          <input type="range" min="0" max="100" step="5" value="${DATA.scores.weights[k]}" data-w="${k}" style="width:100%;accent-color:var(--${c})"></div>`).join('')}
+      </div>
+      <p id="wsum" class="hint"></p>`,
+      'Must total 100% — validated before save')}
+    ${card('Business rules',
+      toggle('Auto Emission Calculation','Generate carbon transactions from Purchase / Manufacturing / Expense / Fleet automatically',true)
+      +toggle('Evidence Requirement','Block CSR approvals unless a proof file is attached',true)
+      +toggle('Badge Auto-Award','Assign badges the moment an unlock rule is satisfied',true)
+      +toggle('Overdue issue flagging','Daily scheduler flags Open issues past their due date',true),
+      'Core platform rules — enforced server-side')}
+  </div>`;
+const notifications=()=>card('Notification settings',
+  toggle('New compliance issue raised','In-app + email to the issue owner',true)
+  +toggle('CSR / challenge approval decisions','Notify the employee on approve or reject',true)
+  +toggle('Policy acknowledgement reminders','Weekly reminder until acknowledged',true)
+  +toggle('Badge unlocks','Congratulate the employee in-app',false),
+  'Choose which events notify people, per channel');
+
+/* =================== ROUTER & SHELL =================== */
+function parseHash(){
+  const [m,s]=(location.hash.replace(/^#\//,'')||'dashboard').split('/');
+  let mod=MODULES.find(x=>x.id===m)||MODULES[0];
+  if(!mod.roles.includes(persona)) mod=MODULES[0];
+  const sub=mod.tabs.find(t=>t[0]===s)?.[0]||mod.tabs[0]?.[0]||'';
+  return {mod,sub};
+}
+function renderNav(active){
+  let html='',grp='';
+  MODULES.filter(m=>m.roles.includes(persona)).forEach(m=>{
+    if(m.grp!==grp){grp=m.grp;html+=`<p class="grp">${grp}</p>`;}
+    const cur=m.id===active.mod.id;
+    html+=`<a href="#/${m.id}${m.tabs[0]?'/'+m.tabs[0][0]:''}" ${cur?'aria-current="page"':''}>${icon(m.icon)}${m.label}${cur?`<span class="dot" style="background:${ACCENT[m.acc]}"></span>`:''}</a>`;
+  });
+  $('#nav').innerHTML=html;
+}
+function renderTabs(active){
+  const m=active.mod;
+  if(!m.tabs.length) return '';
+  const [bg,ink]=TABBG[m.acc];
+  return `<nav class="tabs" style="--tab-bg:${bg};--tab-ink:${ink}" aria-label="${m.label} sections">
+    ${m.tabs.map(t=>`<a href="#/${m.id}/${t[0]}" ${t[0]===active.sub?'aria-current="page"':''}>${t[1]}</a>`).join('')}</nav>`;
+}
+function route(){
+  const active=parseHash();
+  renderNav(active);
+  $('#view').innerHTML=renderTabs(active)+V[active.mod.id](active.sub);
+  if(active.mod.id==='settings'&&active.sub==='config') wireWeights();
+  $('#sidebar').classList.remove('open');$('#backdrop').classList.remove('show');
+  window.scrollTo(0,0);
+}
+
+/* weights validation demo */
+function wireWeights(){
+  const upd=()=>{
+    let sum=0;
+    document.querySelectorAll('#weights input').forEach(r=>{const k=r.dataset.w;const v=+r.value;sum+=v;$('#w'+k).textContent=v+'%';});
+    const el=$('#wsum');
+    el.innerHTML=sum===100?`✅ Total <b>100%</b> — valid`:`<span style="color:var(--danger)">⚠️ Total <b>${sum}%</b> — weights must sum to 100 before saving</span>`;
+  };
+  document.querySelectorAll('#weights input').forEach(r=>r.addEventListener('input',upd));upd();
+}
+
+/* new-goal modal with inline validation demo */
+function openGoalModal(){
+  $('#modalBox').innerHTML=`
+    <h2>New sustainability goal</h2><p class="sub">All fields validate before save — the server enforces the same rules.</p>
+    <div class="field" id="f-name"><label>Goal name *</label><input placeholder="e.g. Reduce fleet emissions 20%"><p class="msg">Name is required.</p></div>
+    <div class="field" id="f-dept"><label>Department *</label><select><option value="">Select…</option>${DATA.departments.map(d=>`<option>${d.n}</option>`).join('')}</select><p class="msg">Pick a department.</p></div>
+    <div class="field" id="f-target"><label>Target reduction (tCO₂e) *</label><input type="number" placeholder="500"><p class="msg">Target must be a number greater than 0.</p></div>
+    <div class="field" id="f-due"><label>Deadline *</label><input type="date"><p class="msg">Deadline must be in the future.</p></div>
+    <div class="foot"><button class="btn out" data-act="close">Cancel</button><button class="btn pri" data-act="savegoal">Save goal</button></div>`;
+  $('#modalBg').classList.add('show');
+}
+function saveGoal(){
+  let ok=true;
+  const req=(id,test)=>{const f=$(id);const bad=!test(f.querySelector('input,select'));f.classList.toggle('err',bad);if(bad)ok=false;};
+  req('#f-name',e=>e.value.trim().length>0);
+  req('#f-dept',e=>e.value!=='');
+  req('#f-target',e=>+e.value>0);
+  req('#f-due',e=>e.value&&new Date(e.value)>new Date());
+  if(ok){$('#modalBg').classList.remove('show');toast('✅ Goal saved — tracking starts immediately');}
+}
+
+/* =================== GLOBAL EVENTS =================== */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act],[data-toggle],[data-lb],[data-sr],[data-cm],.filters button');
+  if(!t) return;
+  if(t.dataset.cm){chartState.mode=t.dataset.cm;return route();}
+  if(t.dataset.sr){chartState[t.dataset.sr]=!chartState[t.dataset.sr];return route();}
+  if(t.dataset.act){
+    const a=t.dataset.act;
+    if(a==='newgoal') return openGoalModal();
+    if(a==='savegoal') return saveGoal();
+    if(a==='close') return $('#modalBg').classList.remove('show');
+    if(a==='redeem'){DATA.me.points-=+t.dataset.cost;toast(`🎁 Redeemed — ${t.dataset.cost} pts deducted · balance ${DATA.me.points} pts`);return route();}
+    if(a==='approve'){t.closest('tr').querySelectorAll('td')[5].innerHTML=statusPill('Approved');t.closest('td').innerHTML='—';return toast('✅ Approved — points awarded & employee notified');}
+    if(a==='reject'){t.closest('tr').querySelectorAll('td')[5].innerHTML=statusPill('Rejected');t.closest('td').innerHTML='—';return toast('Participation rejected — employee notified');}
+    if(a==='ack'){t.outerHTML=pill('Done','p-env');return toast('📋 Policy acknowledged — recorded with timestamp');}
+    if(a==='join'||a==='joinch'){t.textContent='Joined ✓';t.disabled=true;return toast('You joined — track it under My Participation');}
+    if(a==='upload'){t.outerHTML='<span class="mono">proof-upload.jpg</span>';return toast('📎 Proof attached — awaiting review');}
+    if(a==='activate'){return toast('Challenge moved: Draft → Active');}
+    if(a==='complete'){return toast('Challenge moved: Under Review → Completed · XP awarded');}
+    if(a==='run'){$('#preview').innerHTML=card('Preview — 4 rows match',table(['Date','Department','Module','Metric','Value'],[
+      ['2026-07-08','Logistics','Environmental','Fleet CO₂e','2,196 kg'],['2026-07-07','Procurement','Environmental','Purchase CO₂e','8,190 kg'],
+      ['2026-07-05','Manufacturing','Social','CSR participation','+3'],['2026-07-04','Corporate','Governance','Policy ack','92%']]
+      .map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`)));return;}
+    if(a==='export'){return toast('⬇ Export queued — lands in your downloads (demo)');}
+  }
+  if(t.dataset.lb!==undefined&&t.dataset.lb){ /* leaderboard toggle */
+    t.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));t.classList.add('on');
+    const dept=t.dataset.lb==='dept';
+    const podium=t.closest('.card').querySelector('.podium');
+    const rows=dept?DATA.lbDept:DATA.lbEmp;
+    podium.innerHTML=rows.slice(0,3).map((p,i)=>`<div class="pod r${i+1}"><span class="rank">${i+1}</span><b>${p[0]}</b><span>${(dept?'':p[1]+' · ')+(p[dept?1:2]).toLocaleString()} XP</span></div>`).join('');
+    t.closest('.card').querySelector('tbody').innerHTML=rows.map((p,i)=>`<tr><td class="b num">#${i+1}</td><td class="b">${p[0]}</td><td class="mut">${dept?'—':p[1]}</td><td class="b num">${(p[dept?1:2]).toLocaleString()}</td></tr>`).join('');
+    return;
+  }
+  if(t.closest('.filters')&&!t.dataset.lb){t.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));t.classList.add('on');return;}
+  if(t.dataset.toggle!==undefined||t.closest('[data-toggle]')){const sw=(t.closest('[data-toggle]')||t).querySelector('.sw');if(sw)sw.classList.toggle('on');return;}
+});
+$('#modalBg').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show');});
+$('#menuBtn').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#backdrop').classList.add('show');});
+$('#backdrop').addEventListener('click',()=>{$('#sidebar').classList.remove('open');$('#backdrop').classList.remove('show');});
+$('#bellBtn').addEventListener('click',e=>{e.stopPropagation();$('#notif').classList.toggle('show');});
+document.addEventListener('click',e=>{if(!e.target.closest('#notif,#bellBtn'))$('#notif').classList.remove('show');});
+$('#markRead').addEventListener('click',()=>{$('#bellBtn').querySelector('.ping')?.remove();toast('All notifications marked read');});
+$('#notifList').innerHTML=DATA.notifs.map(n=>`<li><span class="nico" style="background:${n.bg}">${n.i}</span><span>${n.t}<time>${n.w}</time></span></li>`).join('');
+$('#persona').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-p]');if(!b)return;
+  persona=b.dataset.p;
+  $('#persona').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#avatar').textContent=persona==='admin'?'AR':'👤';
+  location.hash='#/dashboard';route();
+  toast(persona==='admin'?'Viewing as Admin — full navigation':'Viewing as Employee — trimmed navigation');
+});
+window.addEventListener('hashchange',route);
+route();
+</script>
+</body>
+</html>
