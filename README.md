@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌍 EcoSphere — ESG Management Platform
+# EcoSphere — ESG Management Platform
 
 **Measure, manage and improve Environmental, Social & Governance performance — natively inside your ERP.**
 
