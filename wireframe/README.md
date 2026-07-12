@@ -13,6 +13,15 @@ open wireframe/index.html      # or double-click it
 - **Business rules visualized** — evidence-blocked approvals, overdue compliance flagging, badge unlock rules, reward stock/points gating, weight-sum validation, notification center.
 - **Interactive demos** — kanban lifecycle, approval decisions, policy acknowledgements, reward redemption, report builder preview, and a validated "New Goal" form.
 
+## Journey flows
+
+How each persona moves through the platform — Employee (green), Admin (indigo), Super Admin (amber). Interactive version: open `flows.html`.
+
+![EcoSphere journey flows — Employee, Admin, and Super Admin lanes](flows.png)
+
+- **Approval gate**: no proof → no points; rejections notify the employee with a reason and allow resubmission.
+- **Escalation**: an OU below the platform threshold for 2 consecutive months fires a Super Admin alert.
+
 ## Conventions
 
 - Deep green = Environmental/brand · teal = Social · indigo = Governance · amber = Gamification · **red is reserved for overdue/blocked**.

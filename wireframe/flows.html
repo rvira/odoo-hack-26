@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EcoSphere — User Journey Flows</title>
+<!-- Self-contained flow diagram: no CDNs, no fonts, no network. Works fully offline. -->
+<style>
+/* ============ Design tokens — mirrors wireframe/index.html ============ */
+:root{
+  --env:#1b7a43; --env-soft:#e7f4ec; --env-line:#bfe0cc;
+  --soc:#0f766e; --soc-soft:#e6f4f2; --soc-line:#b9dfda;
+  --gov:#4f46e5; --gov-soft:#edecfc; --gov-line:#c9c6f4;
+  --game:#b45309; --game-acc:#f59e0b; --game-soft:#fdf3e2; --game-line:#f0d9ae;
+  --danger:#dc2626; --danger-soft:#fdeaea;
+  --ink:#1a2b22; --muted:#5f6f66; --faint:#8ea297;
+  --bg:#f4f7f5; --card:#ffffff; --line:#e2e9e4; --line2:#eef2ef;
+  --side:#0f2318; --side-ink:#cfe0d6;
+  --r:12px;
+  --shadow:0 1px 2px rgba(15,35,24,.05),0 4px 14px rgba(15,35,24,.05);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:14px/1.5 var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--env);outline-offset:2px;border-radius:4px}
+
+/* ============ Page shell ============ */
+.wrap{max-width:1280px;margin:0 auto;padding:26px 20px 70px;display:flex;flex-direction:column;gap:20px}
+@media(max-width:640px){.wrap{padding:16px 12px 48px}}
+
+.pagehead{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--env);color:#fff;font-weight:700;font-size:16px}
+.brand h1{font-size:20px;letter-spacing:-.02em}
+.brand small{display:block;font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.pagehead p{width:100%;color:var(--muted);font-size:13px;margin-top:-4px}
+.backlink{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;
+  font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.backlink:hover{background:var(--line2)}
+
+/* persona legend */
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 11px;border-radius:99px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:5px;height:5px;border-radius:99px;background:currentColor}
+.p-env{background:var(--env-soft);color:var(--env)}
+.p-gov{background:var(--gov-soft);color:var(--gov)}
+.p-game{background:var(--game-soft);color:var(--game)}
+.p-soc{background:var(--soc-soft);color:var(--soc)}
+.p-dgr{background:var(--danger-soft);color:var(--danger)}
+
+/* ============ Flow sections ============ */
+.lane{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}
+.lane header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:4px}
+.lane h2{font-size:14.5px;letter-spacing:-.01em}
+.lane .sub{width:100%;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+
+.flow{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x proximity}
+.flow::-webkit-scrollbar{height:6px}
+.flow::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+
+.step{flex:none;width:172px;scroll-snap-align:start;position:relative;background:var(--card);
+  border:1px solid var(--line);border-top:3px solid var(--acc,var(--env));border-radius:10px;
+  padding:14px 13px 13px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.step:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(15,35,24,.12)}
+.step .n{position:absolute;top:9px;right:10px;font:10.5px var(--mono);color:var(--faint)}
+.step .ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;
+  background:var(--acc-soft,var(--env-soft));margin-bottom:9px}
+.step b{display:block;font-size:13px;letter-spacing:-.01em;margin-bottom:3px}
+.step span{display:block;font-size:11.5px;color:var(--muted);line-height:1.4}
+.step .tag{display:inline-flex;margin-top:8px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;
+  font-size:10.5px;font-weight:500;color:var(--muted);white-space:nowrap}
+
+.arrow{flex:none;align-self:center;width:34px;display:grid;place-items:center;color:var(--faint)}
+.arrow svg{width:20px;height:20px}
+
+/* branch note under a lane (e.g. approve / reject outcome) */
+.branch{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.branch span{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:600}
+.branch .ok{background:var(--env-soft);color:var(--env)}
+.branch .no{background:var(--danger-soft);color:var(--danger)}
+.branch .info{background:var(--line2);color:var(--muted)}
+
+/* per-lane accents */
+.lane.emp .step{--acc:var(--env);--acc-soft:var(--env-soft)}
+.lane.adm .step{--acc:var(--gov);--acc-soft:var(--gov-soft)}
+.lane.sup .step{--acc:var(--game-acc);--acc-soft:var(--game-soft)}
+
+.foot{text-align:center;font-size:12px;color:var(--faint)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="pagehead">
+    <div class="brand">
+      <span class="logo">E</span>
+      <span><h1>EcoSphere — Journey Flows</h1><small>ESG Platform · Wireframe companion</small></span>
+    </div>
+    <a class="backlink" href="index.html">← Open wireframe</a>
+    <p>How each persona moves through the platform. Scroll a lane horizontally to follow the journey — same color language as the wireframe.</p>
+  </div>
+
+  <div class="legend" aria-label="Persona legend">
+    <span class="pill p-env">Employee</span>
+    <span class="pill p-gov">Admin</span>
+    <span class="pill p-game">Super Admin</span>
+    <span class="pill p-dgr">Blocked / rejected path</span>
+  </div>
+
+  <!-- ============ EMPLOYEE ============ -->
+  <section class="lane emp">
+    <header><h2>Employee Flow</h2><span class="pill p-env">Employee</span></header>
+    <p class="sub">Participate, earn, and redeem — every action feeds the organization's Social &amp; Environmental scores.</p>
+
+    <div class="flow">
+      <div class="step"><span class="n">01</span><div class="ico">🔐</div><b>Keka Login</b><span>Authenticate via company SSO</span><span class="tag">Entry</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">02</span><div class="ico">📊</div><b>Dashboard</b><span>My XP, points, badges &amp; org ESG pulse</span><span class="tag">Dashboard</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">03</span><div class="ico">🎮</div><b>Browse &amp; Join</b><span>Challenges and CSR activities open for enrolment</span><span class="tag">Gamification · Social</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">04</span><div class="ico">📤</div><b>Play &amp; Upload</b><span>Complete the activity and submit proof / evidence</span><span class="tag">Participation</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">05</span><div class="ico">⏳</div><b>Admin Review</b><span>Evidence-blocked approval — no proof, no points</span><span class="tag">Approval gate</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">06</span><div class="ico">📈</div><b>Progress</b><span>XP &amp; points credited; streaks and rank update</span><span class="tag">Leaderboard</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">07</span><div class="ico">🏅</div><b>Badges</b><span>Rule-based unlocks — XP, streaks, participation</span><span class="tag">Recognition</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">08</span><div class="ico">🎁</div><b>Redeem Rewards</b><span>Spend points — stock &amp; balance gated</span><span class="tag">Rewards</span></div>
+    </div>
+
+    <div class="branch">
+      <span class="ok">✅ Approved → +XP / +points, badge rules re-checked</span>
+      <span class="no">❌ Rejected → notified with reason, resubmit proof</span>
+      <span class="info">🔔 Every outcome lands in the notification center</span>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN ============ -->
+  <section class="lane adm">
+    <header><h2>Admin Flow</h2><span class="pill p-gov">Admin</span></header>
+    <p class="sub">Configure once, then run the loop: create → approve → track → act on alerts and AI suggestions.</p>
+
+    <div class="flow">
+      <div class="step"><span class="n">01</span><div class="ico">🔐</div><b>Keka Login</b><span>Authenticate with admin role</span><span class="tag">Entry</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">02</span><div class="ico">⚙️</div><b>Configure</b><span>Departments, categories, emission factors, E/S/G weights</span><span class="tag">Settings</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">03</span><div class="ico">👥</div><b>Manage Users</b><span>Employees, roles &amp; data entry ownership</span><span class="tag">Settings</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">04</span><div class="ico">🎯</div><b>Set Goals</b><span>Org &amp; department ESG goals with targets and due dates</span><span class="tag">Environmental</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">05</span><div class="ico">🎮</div><b>Create Games</b><span>Challenges &amp; CSR drives — XP, rules, evidence required</span><span class="tag">Gamification</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">06</span><div class="ico">🪪</div><b>Generate ESG Cards</b><span>Sub-category scorecards per pillar</span><span class="tag">Reporting</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">07</span><div class="ico">✅</div><b>Approve Proofs</b><span>Participation &amp; challenge queues — evidence-blocked</span><span class="tag">Approval gate</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">08</span><div class="ico">📊</div><b>Track Progress</b><span>Org / department scores, trends &amp; heatmaps</span><span class="tag">Dashboard</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">09</span><div class="ico">🚨</div><b>Alerts</b><span>Rules fire on low scores, overdue compliance, lagging training</span><span class="tag">Notifications</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">10</span><div class="ico">💡</div><b>Suggestions</b><span>AI recommendations → one-click goal or challenge</span><span class="tag">Loops back to 04</span></div>
+    </div>
+
+    <div class="branch">
+      <span class="info">🔁 Suggestions loop back into Goals &amp; Games — continuous improvement cycle</span>
+      <span class="no">⏰ Overdue compliance issues are flagged red until resolved</span>
+    </div>
+  </section>
+
+  <!-- ============ SUPER ADMIN ============ -->
+  <section class="lane sup">
+    <header><h2>Super Admin Flow</h2><span class="pill p-game">Super Admin</span></header>
+    <p class="sub">Odoo platform-level: onboard organizations, gate premium features, and watch every OU from one screen.</p>
+
+    <div class="flow">
+      <div class="step"><span class="n">01</span><div class="ico">🔐</div><b>Platform Login</b><span>Platform-level access, all organizations</span><span class="tag">Entry</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">02</span><div class="ico">🏢</div><b>Add OU</b><span>Register an Organization Unit &amp; assign its admin</span><span class="tag">Onboarding</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">03</span><div class="ico">💎</div><b>Premium</b><span>Enable subscription tier &amp; feature flags per OU</span><span class="tag">Billing</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">04</span><div class="ico">🌍</div><b>Track Progress</b><span>Cross-org ESG scores, goals &amp; participation</span><span class="tag">Portfolio view</span></div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step"><span class="n">05</span><div class="ico">📬</div><b>Advise Admins</b><span>Send targeted suggestions to lagging OUs</span><span class="tag">Feeds admin alerts</span></div>
+    </div>
+
+    <div class="branch">
+      <span class="no">🚨 OU below platform threshold for 2 months → escalation alert</span>
+      <span class="info">📬 Suggestions arrive in that org admin's alert inbox</span>
+    </div>
+  </section>
+
+  <p class="foot">Static wireframe companion — same design tokens as <a href="index.html" style="text-decoration:underline">index.html</a>. All content is demo-only.</p>
+
+</div>
+
+</body>
+</html>
