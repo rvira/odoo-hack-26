@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Keep the CI actions themselves patched (supply-chain hygiene).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Activates automatically if a requirements.txt / pyproject.toml is added.
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
