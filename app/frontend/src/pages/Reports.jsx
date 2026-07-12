@@ -53,7 +53,7 @@ function Summary() {
       <section className="card">
         <h2>ESG Summary</h2>
         <p className="sub">Executive overview — all scores with department comparison</p>
-        <DataTable columns={['Department', 'E', 'S', 'G', 'Total']}
+        <DataTable columns={['Department', { label: 'E', num: true }, { label: 'S', num: true }, { label: 'G', num: true }, { label: 'Total', num: true }]}
           rows={data.dept_scores.map((d) => ({
             key: d.department,
             cells: [
@@ -78,7 +78,7 @@ function Environmental() {
     <section className="card">
       <h2>Environmental Report</h2>
       <p className="sub">Emissions by scope, goal progress and source breakdown</p>
-      <DataTable columns={['Scope', 'Emissions (YTD)', 'Share']}
+      <DataTable columns={['Scope', { label: 'Emissions (YTD)', num: true }, { label: 'Share', num: true }]}
         rows={data.by_scope.map((s) => ({
           key: s.label,
           cells: [
@@ -100,7 +100,7 @@ function MetricsReport({ kind, title, sub }) {
     <section className="card">
       <h2>{title}</h2>
       <p className="sub">{sub}</p>
-      <DataTable columns={['Metric', 'Value']}
+      <DataTable columns={['Metric', { label: 'Value', num: true }]}
         rows={data.metrics.map(([label, value]) => ({
           key: label,
           cells: [<span className="b">{label}</span>, <span className="num">{value}</span>],
@@ -197,7 +197,7 @@ function Builder() {
       {rows && (
         <div style={{ marginTop: 16 }}>
           <h2>Preview — {rows.length} row{rows.length === 1 ? '' : 's'} match</h2>
-          <DataTable columns={['Date', 'Department', 'Module', 'Metric', 'Value']} empty="No rows match these filters."
+          <DataTable columns={['Date', 'Department', 'Module', 'Metric', { label: 'Value', num: true }]} empty="No rows match these filters."
             rows={rows.map((r, i) => ({
               key: i,
               cells: [r.date, r.department, r.module, r.metric, <span className="num">{r.value}</span>],

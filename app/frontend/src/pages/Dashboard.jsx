@@ -282,7 +282,7 @@ function SuperDashboard({ data, reload }) {
       <section className="card">
         <h2>Organizations</h2>
         <p className="sub">Live ESG posture per tenant — sorted by overall score</p>
-        <DataTable columns={['OUID', 'Organization', 'ESG Admin', 'Employees', 'E', 'S', 'G', 'Overall']}
+        <DataTable columns={['OUID', 'Organization', 'ESG Admin', { label: 'Employees', num: true }, { label: 'E', num: true }, { label: 'S', num: true }, { label: 'G', num: true }, 'Overall']}
           empty="No organizations onboarded yet."
           rows={data.orgs.map((o) => ({
             key: o.id,

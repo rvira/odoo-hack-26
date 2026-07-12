@@ -153,7 +153,7 @@ function Transactions() {
       {error && <p className="loaderr">⚠️ {error}</p>}
       {data && (
         <DataTable
-          columns={['Ref', 'Source record', 'Department', 'Scope', 'Quantity', 'Emission factor', 'CO₂e', 'Date']}
+          columns={['Ref', 'Source record', 'Department', 'Scope', { label: 'Quantity', num: true }, 'Emission factor', { label: 'CO₂e', num: true }, 'Date']}
           rows={data.map((t) => ({
             key: t.id,
             cells: [
@@ -275,7 +275,7 @@ function Goals() {
         {loading && <p className="loading">Loading goals…</p>}
         {error && <p className="loaderr">⚠️ {error}</p>}
         {data && (
-          <DataTable columns={['Goal', 'Department', 'Target CO₂', 'Current', 'Progress', 'Deadline', 'Status']}
+          <DataTable columns={['Goal', 'Department', { label: 'Target CO₂', num: true }, { label: 'Current', num: true }, 'Progress', 'Deadline', 'Status']}
             rows={data.map((g) => ({
               key: g.id,
               cells: [
@@ -306,7 +306,7 @@ function Products() {
       {loading && <p className="loading">Loading products…</p>}
       {error && <p className="loaderr">⚠️ {error}</p>}
       {data && (
-        <DataTable columns={['SKU', 'Product', 'Embodied CO₂e', 'ESG weightage', 'Recyclable', 'Rating']}
+        <DataTable columns={['SKU', 'Product', { label: 'Embodied CO₂e', num: true }, 'ESG weightage', 'Recyclable', 'Rating']}
           rows={data.map((s) => ({
             key: s.id,
             cells: [
@@ -365,7 +365,7 @@ function EnvDash() {
       <section className="card">
         <h2>Department carbon tracking</h2>
         <p className="sub">Where each department's footprint comes from</p>
-        <DataTable columns={['Department', 'Fleet', 'Purchase', 'Mfg', 'Expense', 'Total tCO₂e']}
+        <DataTable columns={['Department', { label: 'Fleet', num: true }, { label: 'Purchase', num: true }, { label: 'Mfg', num: true }, { label: 'Expense', num: true }, { label: 'Total tCO₂e', num: true }]}
           rows={d.dept_breakdown.map((r) => ({
             key: r.department,
             cells: [

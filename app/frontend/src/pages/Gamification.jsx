@@ -379,7 +379,7 @@ function Mine() {
       <section className="card">
         <h2>My challenge participation</h2>
         <p className="sub">Progress, proof and XP for challenges you joined</p>
-        <DataTable columns={['Challenge', 'Progress', 'Proof', 'Status', 'XP awarded']}
+        <DataTable columns={['Challenge', 'Progress', 'Proof', 'Status', { label: 'XP awarded', num: true }]}
           empty="You haven't joined any challenges yet."
           rows={data.map((c) => {
             const inProgress = String(c.status).toLowerCase() === 'in_progress';
@@ -408,7 +408,7 @@ function Mine() {
     <section className="card">
       <h2>Challenge participation — approvals</h2>
       <p className="sub">Proof review for challenges at 100% progress</p>
-      <DataTable columns={['Employee', 'Challenge', 'Progress', 'Proof', 'XP', 'Status', 'Decision']}
+      <DataTable columns={['Employee', 'Challenge', 'Progress', 'Proof', { label: 'XP', num: true }, 'Status', 'Decision']}
         empty="No participations in the queue."
         rows={data.map((q) => {
           const noProof = !q.proof;
@@ -469,7 +469,7 @@ function Leaderboard() {
           </div>
         ))}
       </div>
-      <DataTable columns={['Rank', 'Name', 'Department', 'XP']} empty="No XP earned yet."
+      <DataTable columns={[{ label: 'Rank', num: true }, 'Name', 'Department', { label: 'XP', num: true }]} empty="No XP earned yet."
         rows={rows.map((p, i) => ({
           key: i,
           cells: [

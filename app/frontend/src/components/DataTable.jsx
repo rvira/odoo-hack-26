@@ -1,14 +1,16 @@
 /**
  * Horizontal-scrolling table matching the wireframe.
- * columns: ["Ref", "Date", ...]
+ * columns: ["Ref", "Date", ...] — or { label, num: true } for numeric columns,
+ * which right-aligns the header to line up with the right-aligned .num cells.
  * rows: [{ key, className?, cells: [node, ...] }]
  */
 export default function DataTable({ columns, rows, empty = 'No records yet.' }) {
+  const cols = columns.map((c) => (typeof c === 'string' ? { label: c } : c));
   return (
     <div className="tscroll">
       <table>
         <thead>
-          <tr>{columns.map((c, i) => <th key={i}>{c}</th>)}</tr>
+          <tr>{cols.map((c, i) => <th key={i} className={c.num ? 'num' : undefined}>{c.label}</th>)}</tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (

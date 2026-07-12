@@ -87,7 +87,7 @@ function Departments() {
       {loading && <p className="loading">Loading departments…</p>}
       {error && <p className="loaderr">⚠️ {error}</p>}
       {data && (
-        <DataTable columns={['Name', 'Code', 'Head', 'Parent', 'Employees', 'Status']}
+        <DataTable columns={['Name', 'Code', 'Head', 'Parent', { label: 'Employees', num: true }, 'Status']}
           rows={data.map((d) => ({
             key: d.id,
             cells: [
@@ -260,7 +260,7 @@ function Factors() {
       {loading && <p className="loading">Loading factors…</p>}
       {error && <p className="loaderr">⚠️ {error}</p>}
       {data && (
-        <DataTable columns={['Name', 'Scope', 'Unit', 'Factor', 'Source']}
+        <DataTable columns={['Name', 'Scope', 'Unit', { label: 'Factor', num: true }, 'Source']}
           rows={data.map((f) => ({
             key: f.id,
             cells: [

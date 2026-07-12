@@ -144,7 +144,7 @@ function Participations() {
       <section className="card">
         <h2>My participations</h2>
         <p className="sub">Approval decisions trigger notifications automatically</p>
-        <DataTable columns={['Activity', 'Completed', 'Proof', 'Points', 'Status']}
+        <DataTable columns={['Activity', 'Completed', 'Proof', { label: 'Points', num: true }, 'Status']}
           empty="You haven't joined any CSR activities yet."
           rows={data.map((q) => ({
             key: q.id,
@@ -166,7 +166,7 @@ function Participations() {
     <section className="card">
       <h2>Participation approvals</h2>
       <p className="sub">CSR participation queue — points are awarded on approval</p>
-      <DataTable columns={['Employee', 'Activity', 'Completed', 'Proof', 'Points', 'Status', 'Decision']}
+      <DataTable columns={['Employee', 'Activity', 'Completed', 'Proof', { label: 'Points', num: true }, 'Status', 'Decision']}
         empty="No participations in the queue."
         rows={data.map((q) => {
           const noProof = !q.proof;
