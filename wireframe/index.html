@@ -439,6 +439,16 @@ const DATA = {
     {n:'Weekend eco-resort stay for 2',cost:2500,stock:2,i:'🏞️',cat:'Experiences'},
   ],
   me:{name:'Aditi Rao',xp:3910,points:640,badges:3,rank:1},
+  adminAlerts:[
+    {i:'📬',type:'Suggestion from Super Admin',sev:'Medium',when:'today',act:'Create challenge',
+     msg:'Environmental drives your growth (+12 YTD) but Logistics drags the total at 65 — consider a fleet-efficiency challenge and a Logistics-scoped carbon goal.'},
+    {i:'🚨',type:'Rule fired · Dept score below 70',sev:'High',when:'2h ago',act:'Open Environmental',
+     msg:'Logistics scored 65 this month (your threshold: 70). Fleet diesel is 82% of its footprint.'},
+    {i:'⏰',type:'Rule fired · Overdue compliance',sev:'High',when:'4h ago',act:'View issue',
+     msg:'“Missing MSDS sheets” passed its due date while still Open — owner S. Nair has been notified.'},
+    {i:'📉',type:'Rule fired · Training below 75%',sev:'Medium',when:'1d ago',act:'Send reminders',
+     msg:'Sales mandatory-training completion is at 74% — 11 employees pending.'},
+  ],
   orgs:[
     {ouid:'OU-1001',o:'Acme Corp',admin:'A. Mehta',emp:322,E:82,S:74,G:88,t:81},
     {ouid:'OU-1002',o:'Helix Pharma',admin:'T. Rao',emp:610,E:88,S:71,G:90,t:84},
@@ -590,93 +600,124 @@ function boxChart(){
   return {svg,hs,lgd,insights,ticks,Y};
 }
 
-function trendChart(){
-  const {E,S,G}=DATA.trend, O=overallTrend(), n=O.length;
-  const Y=v=>46-((v-55)/40)*44;                       // fixed 55–95 scale
-  const X=i=>i*(100/(n-1));
-  const modeBar=`<div class="filters" style="margin-bottom:12px">
-    <button data-cm="trend" class="${chartState.mode==='trend'?'on':''}">Score trend</button>
-    <button data-cm="box" class="${chartState.mode==='box'?'on':''}">Department spread</button>
-  </div>`;
-  if(chartState.mode==='box'){
-    const b=boxChart();
-    return `${modeBar}<div class="tchart">
-        <div class="ylbls">${b.ticks.map(v=>`<span style="top:${(b.Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
-        ${b.svg}<div class="hotspots">${b.hs}</div>
-      </div>
-      <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
-      ${b.lgd}${b.insights}`;
+/* Catmull-Rom → cubic bezier: smooth BI-style curves */
+function smoothD(vals,X,Y){
+  const p=vals.map((v,i)=>[X(i),Y(v)]);
+  let d=`M${p[0][0].toFixed(1)},${p[0][1].toFixed(1)}`;
+  for(let i=0;i<p.length-1;i++){
+    const p0=p[Math.max(0,i-1)],p1=p[i],p2=p[i+1],p3=p[Math.min(p.length-1,i+2)];
+    d+=`C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)},${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)},${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
   }
-  const line=(vals,color,w,dash='')=>`<polyline points="${vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}"
-      fill="none" stroke="${color}" stroke-width="${w}" ${dash} stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
-  /* raw monthly series + smoothed momentum line + variability band (ggplot style) */
-  const SEL={overall:['Overall','var(--ink)',O],E:['Environmental','var(--env)',E],S:['Social','var(--soc)',S],G:['Governance','var(--gov)',G]};
-  const sel=SEL[chartState.series]?chartState.series:'overall';
-  const [selLabel,selColor,raw]=SEL[sel];
-  const hw=2, sm=[], dev=[];
-  raw.forEach((_,i)=>{const a=Math.max(0,i-hw),b=Math.min(n-1,i+hw);const seg=raw.slice(a,b+1);
-    const m=seg.reduce((x,y)=>x+y,0)/seg.length; sm.push(m);
-    dev.push(seg.reduce((x,y)=>x+Math.abs(y-m),0)/seg.length);});
-  const bandHi=sm.map((v,i)=>v+dev[i]+.6), bandLo=sm.map((v,i)=>v-dev[i]-.6);
-  let dlo=Math.min(...raw,...bandLo)-2, dhi=Math.max(...raw,...bandHi)+2;
-  if(chartState.target){dlo=Math.min(dlo,DATA.target-3);dhi=Math.max(dhi,DATA.target+3);}
-  const Yc=v=>2+(1-(v-dlo)/(dhi-dlo))*42;
-  const step=(dhi-dlo)>26?10:5, ticks=[];for(let v=Math.ceil(dlo/step)*step;v<=dhi;v+=step)ticks.push(v);
-  const pts=vals=>vals.map((v,i)=>`${X(i).toFixed(1)},${Yc(v).toFixed(1)}`).join(' ');
-  const rpts=vals=>[...vals].reverse().map((v,idx)=>`${X(n-1-idx).toFixed(1)},${Yc(v).toFixed(1)}`).join(' ');
-  const seriesSel=`<div class="filters" style="margin-bottom:12px">
-    ${Object.entries(SEL).map(([k,v])=>`<button data-ss="${k}" class="${k===sel?'on':''}">${v[0]}</button>`).join('')}
-  </div>`;
-  const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="${selLabel} score — monthly and smoothed" style="height:200px">
-    ${ticks.map(v=>`<line x1="0" y1="${Yc(v).toFixed(1)}" x2="100" y2="${Yc(v).toFixed(1)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
-    <polygon points="${pts(bandHi)} ${rpts(bandLo)}" fill="#94a3b8" opacity=".22"/>
-    <polyline points="${pts(raw)}" fill="none" stroke="${selColor}" stroke-width="1.4" opacity=".6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    ${raw.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Yc(v).toFixed(1)}" r=".9" fill="${selColor}" opacity=".8"/>`).join('')}
-    <polyline points="${pts(sm)}" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    ${chartState.target?`<line x1="0" y1="${Yc(DATA.target).toFixed(1)}" x2="100" y2="${Yc(DATA.target).toFixed(1)}" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="5 4" opacity=".45" vector-effect="non-scaling-stroke"/>`:''}
-  </svg>`;
-  const dot=c=>`<i style="background:${c}"></i>`;
-  const hs=raw.map((v,i)=>{
-    const w=100/(n-1);
-    const left=Math.max(0,X(i)-w/2), width=Math.min(100-left,w);
-    const clamp=i<2?'left:0;transform:none':i>n-3?'left:auto;right:0;transform:none':'';
-    return `<div class="hs" style="left:${left}%;width:${width}%">
-      <div class="tip" style="${clamp}"><b>${DATA.months[i]} ’26 · ${selLabel}</b>
-        ${dot(selColor)}Actual <b style="display:inline">${sel==='overall'?O[i]:v}</b><br>
-        ${dot('var(--ink)')}Trend ${sm[i].toFixed(1)}<br>
-        ${dot('#94a3b8')}Typical range ${bandLo[i].toFixed(0)}–${bandHi[i].toFixed(0)}
-      </div></div>`;}).join('');
-  const heat=(vals,color)=>vals.map(v=>{const t=Math.round(15+((v-55)/40)*70);
-    return `<div class="hmc" style="background:color-mix(in srgb,${color} ${t}%,white);color:${v>=78?'#fff':'var(--ink)'}">${v}</div>`;}).join('');
-  const heatmap=`<div style="margin:16px 0 0 30px">
-      <p class="mut" style="font-size:11.5px;margin-bottom:6px">Raw pillar scores — heat view (darker = stronger)</p>
-      <div class="hmrow"><span class="hml" style="color:var(--env)">E</span>${heat(E,'var(--env)')}</div>
-      <div class="hmrow"><span class="hml" style="color:var(--soc)">S</span>${heat(S,'var(--soc)')}</div>
-      <div class="hmrow"><span class="hml" style="color:var(--gov)">G</span>${heat(G,'var(--gov)')}</div>
-    </div>`;
-  const series=[['E','Environmental','var(--env)',E],['S','Social','var(--soc)',S],['G','Governance','var(--gov)',G]];
-  const lgd=`<div class="lgd">
-    <button style="cursor:default"><i style="background:${selColor};height:2px;width:14px;border-radius:1px"></i><span>Monthly actual</span></button>
-    <button style="cursor:default"><i style="background:var(--ink);height:3px;width:14px;border-radius:1px"></i><span>Smoothed trend (5-mo)</span></button>
-    <button style="cursor:default"><i style="background:#94a3b8;opacity:.5"></i><span>Typical variability</span></button>
+  return d;
+}
+const SERIES4=()=>{const {E,S,G}=DATA.trend;return [
+  ['overall','Overall','var(--ink)',overallTrend()],
+  ['E','Environmental','var(--env)',E],
+  ['S','Social','var(--soc)',S],
+  ['G','Governance','var(--gov)',G]];};
+
+function scoreTrendPanel(){
+  const n=12, X=i=>i*(100/(n-1));
+  const all4=SERIES4();
+  const vis=all4.filter(s=>chartState[s[0]]);
+  const lgd=`<div class="lgd" style="margin-top:12px" role="group" aria-label="Toggle series">
+    ${all4.map(s=>`<button data-sr="${s[0]}" class="${chartState[s[0]]?'':'off'}"><i style="background:${s[2]}"></i><span>${s[1]}</span></button>`).join('')}
     <button data-sr="target" class="${chartState.target?'':'off'}"><i class="dash"></i><span>Target ${DATA.target}</span></button>
   </div>`;
+  if(!vis.length) return '<p class="hint" style="padding:40px 0;text-align:center">All series hidden — click a chip below to plot one.</p>'+lgd;
+  const flat=vis.flatMap(s=>s[3]);
+  let lo=Math.min(...flat)-3, hi=Math.max(...flat)+3;
+  if(chartState.target){lo=Math.min(lo,DATA.target-3);hi=Math.max(hi,DATA.target+3);}
+  const Y=v=>2+(1-(v-lo)/(hi-lo))*42;
+  const step=(hi-lo)>26?10:5, ticks=[];for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)ticks.push(v);
+  const dot=c=>`<i style="background:${c}"></i>`;
+  const svg=`<svg class="chart" viewBox="0 0 100 48" preserveAspectRatio="none" role="img" aria-label="ESG scores, 12 months" style="height:215px">
+    ${ticks.map(v=>`<line x1="0" y1="${Y(v).toFixed(1)}" x2="100" y2="${Y(v).toFixed(1)}" stroke="var(--line2)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+    ${chartState.target?`<line x1="0" y1="${Y(DATA.target).toFixed(1)}" x2="100" y2="${Y(DATA.target).toFixed(1)}" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="5 4" opacity=".4" vector-effect="non-scaling-stroke"/>`:''}
+    ${vis.map(s=>`<path d="${smoothD(s[3],X,Y)}" fill="none" stroke="${s[2]}" stroke-width="${s[0]==='overall'?2.6:1.7}" ${s[0]==='overall'?'':'opacity=".85"'} stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('')}
+    ${vis.map(s=>s[3].map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="1" fill="${s[2]}"/>`).join('')).join('')}
+  </svg>`;
+  const hs=Array.from({length:n},(_,i)=>{
+    const w=100/(n-1), left=Math.max(0,X(i)-w/2), width=Math.min(100-left,w);
+    const clamp=i<2?'left:0;transform:none':i>n-3?'left:auto;right:0;transform:none':'';
+    return `<div class="hs" style="left:${left}%;width:${width}%">
+      <div class="tip" style="${clamp}"><b>${DATA.months[i]} ’26</b>
+        ${vis.map(s=>`${dot(s[2])}${s[1]} <b style="display:inline">${s[3][i]}</b>`).join('<br>')}
+      </div></div>`;}).join('');
+  return `<div class="tchart">
+      <div class="ylbls">${ticks.map(v=>`<span style="top:${(Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
+      ${svg}<div class="hotspots">${hs}</div>
+    </div>
+    <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>${lgd}`;
+}
+
+function donutMixPanel(){
+  const s=DATA.scores, wt=s.weights;
+  const parts=[['Environmental',s.E,wt.E,'var(--env)','#1b7a43'],['Social',s.S,wt.S,'var(--soc)','#0f766e'],['Governance',s.G,wt.G,'var(--gov)','#4f46e5']]
+    .map(([l,sc,w,c,hex])=>({l,sc,w,c,hex,pts:+(sc*w/100).toFixed(1)}));
+  const total=parts.reduce((a,p)=>a+p.pts,0);
+  let acc=0;
+  const stops=parts.map(p=>{const from=acc/total*100;acc+=p.pts;return `${p.hex} ${from.toFixed(1)}% ${(acc/total*100).toFixed(1)}%`;}).join(',');
+  return `<div class="donutwrap">
+    <div class="donut" data-c="${s.overall}\noverall" style="width:150px;height:150px;background:conic-gradient(${stops})"></div>
+    <div style="flex:1;min-width:200px">
+      ${parts.map(p=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:13px">
+        <i style="width:10px;height:10px;border-radius:3px;background:${p.c};flex:none"></i>
+        <span style="flex:1">${p.l}</span>
+        <span class="mut" style="font-size:12px">score ${p.sc} × ${p.w}%</span>
+        <b class="num">+${p.pts}</b>
+      </div>`).join('')}
+      <p class="hint">Slice size = weighted contribution to the overall ${s.overall}.</p>
+    </div>
+  </div>`;
+}
+
+function deptBarsPanel(){
+  const rows=[...DATA.deptScores].sort((a,b)=>b.t-a.t);
+  return rows.map(d=>`<div style="display:grid;grid-template-columns:110px 1fr 34px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line2);font-size:13px">
+      <span class="b" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.d}</span>
+      <div class="meter" style="--acc:${d.t<70?'var(--game-acc)':'var(--env)'};height:10px"><i style="width:${d.t}%"></i></div>
+      <b class="num" style="text-align:right">${d.t}</b>
+    </div>`).join('')
+    +`<div style="display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:var(--muted)"><span><i style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--env);margin-right:5px"></i>On track</span><span><i style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--game-acc);margin-right:5px"></i>Below 70</span></div>`;
+}
+
+function boxPanel(){
+  const b=boxChart();
+  return `<div class="tchart">
+      <div class="ylbls">${b.ticks.map(v=>`<span style="top:${(b.Y(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
+      ${b.svg}<div class="hotspots">${b.hs}</div>
+    </div>
+    <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
+    ${b.lgd}`;
+}
+
+function insightsStrip(){
+  const O=overallTrend(), n=12;
+  const series=SERIES4().slice(1);
   const up=O.filter((v,i)=>i&&v>O[i-1]).length;
   const gains=series.map(s=>[s[1],s[3][n-1]-s[3][0],s[2]]).sort((a,b)=>b[1]-a[1]);
   const lag=series.reduce((a,s)=>s[3][n-1]<a[3][n-1]?s:a);
   const gap=DATA.target-O[n-1];
-  const insights=`<div class="insights">
+  const worstDept=[...DATA.deptScores].sort((a,b)=>a.t-b.t)[0];
+  return `<div class="insights" style="margin-top:0">
     <span style="background:var(--env-soft);color:var(--env)">▲ Improved ${up} of ${n-1} months</span>
     <span style="background:color-mix(in srgb,${gains[0][2]} 11%,white);color:${gains[0][2]}">${gains[0][0]} drives growth · +${gains[0][1]} pts YTD</span>
-    <span style="background:color-mix(in srgb,${lag[2]} 11%,white);color:${lag[2]}">${lag[1]} lags at ${lag[3][n-1]} · +${lag[3][n-1]-lag[3][0]} YTD</span>
+    <span style="background:color-mix(in srgb,${lag[2]} 11%,white);color:${lag[2]}">${lag[1]} lags at ${lag[3][n-1]}</span>
+    <span style="background:var(--danger-soft);color:var(--danger)">${worstDept.d} is the outlier at ${worstDept.t}</span>
     <span style="background:var(--line2);color:var(--muted)">${gap>0?gap+' pts to '+DATA.target+' target':'Target reached 🎉'}</span>
   </div>`;
-  return `${modeBar}${seriesSel}<div class="tchart">
-      <div class="ylbls">${ticks.map(v=>`<span style="top:${(Yc(v)/48*100).toFixed(1)}%">${v}</span>`).join('')}</div>
-      ${svg}<div class="hotspots">${hs}</div>
-    </div>
-    <div class="xlbls" style="margin-left:30px">${DATA.months.map(m=>`<span>${m}</span>`).join('')}</div>
-    ${lgd}${heatmap}${insights}`;
+}
+
+function alertsInbox(){
+  return DATA.adminAlerts.map(a=>`<div class="note ${a.sev==='High'?'dgr':'warn'}" style="flex-direction:column;gap:6px;margin-bottom:9px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span>${a.i}</span><b style="font-size:12.5px">${a.type}</b>${sev(a.sev)}<span style="font-size:11px;opacity:.7">${a.when}</span></div>
+      <span>${a.msg}</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri sm" data-act="alertact" data-m="${a.act}">${a.act}</button><button class="btn out sm" data-act="alertact" data-m="Acknowledged">Acknowledge</button></div>
+    </div>`).join('')
+  +`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px">
+     <p class="hint" style="margin-top:0">Rules are yours to define — Super Admin only switches alerting on/off.</p>
+     <a class="btn out sm" href="#/settings/config">⚙ Set alert rules</a></div>`;
 }
 /* per-SKU embodied-carbon trend with toggleable series; axis rescales to visible SKUs */
 const skuState={};
@@ -793,15 +834,19 @@ V.dashboard=()=>{
     ${kpi('Governance',s.G,'var(--gov)',['up','2 pts vs last qtr'],undefined,DATA.trend.G)}
     ${kpi('Overall ESG',s.overall,'var(--ink)',['up','3 pts vs last qtr'],undefined,overallTrend())}
   </div>
-  ${card('ESG performance — 12 months',trendChart(),`Pick a series to watch — thin line is the monthly actual, bold line is the smoothed momentum, the grey ribbon is its typical variability`)}
   <div class="split">
-    ${card('Department scores',table(['Department','E','S','G','Total'],DATA.deptScores.map(d=>`<tr><td class="b">${d.d}</td><td class="num">${d.E}</td><td class="num">${d.S}</td><td class="num">${d.G}</td><td style="min-width:130px">${mrow(d.t,d.t<70?'var(--game-acc)':'var(--env)')}</td></tr>`)),'Ranked by total score — feeds the Overall ESG Score')}
-    ${card('Recent activity',`<ul class="alist">${DATA.activity.map(a=>`<li><span class="aico" style="background:var(--${a.c})">${a.i}</span><span>${a.t}</span><time>${a.w}</time></li>`).join('')}</ul>`)}
+    ${card('Score trend — 12 months',scoreTrendPanel(),'Smoothed monthly series — toggle chips to isolate, hover for values')}
+    ${card('Score mix — this month',donutMixPanel(),'How each pillar builds the overall score')}
   </div>
-  ${card('Needs attention',`
-      <div class="note dgr">⚠️ <span><b>1 compliance issue overdue</b> — “Missing MSDS sheets”, owner S. Nair, due Jul 04. Auto-flagged by the scheduler.</span></div>
-      <div class="note warn" style="margin-top:9px">⏳ <span><b>2 participations awaiting approval</b> — one is missing proof and cannot be approved while Evidence Requirement is on.</span></div>
-      <div class="note env" style="margin-top:9px">🎯 <span><b>Goal at risk</b> — “Reduce fleet emissions 20%” is at 78% with 5 months left.</span></div>`)}`;
+  <div class="split">
+    ${card('Department scores — this month',deptBarsPanel(),'Sorted by total — feeds the Overall ESG Score')}
+    ${card('Department spread — by month',boxPanel(),'Box = middle 50% · line = median · whiskers = best ↔ worst')}
+  </div>
+  ${insightsStrip()}
+  <div class="split">
+    ${card('Alerts & suggestions <span class="pill p-gov" style="vertical-align:2px;margin-left:6px">inbox</span>',alertsInbox(),'Fired by your alert rules · suggestions arrive from Super Admin')}
+    ${card('Recent activity',`<ul class="alist">${DATA.activity.map(a=>`<li><span class="aico" style="background:var(--${a.c})">${a.i}</span><span>${a.t}</span><time>${a.w}</time></li>`).join('')}</ul>`)}
+  </div>`;
 };
 
 /* ---- Environmental ---- */
@@ -1138,10 +1183,8 @@ function saveGoal(){
 /* =================== GLOBAL EVENTS =================== */
 document.addEventListener('click',e=>{
   if(e.target.matches('input,select')) return;
-  const t=e.target.closest('[data-act],[data-toggle],[data-lb],[data-sr],[data-cm],[data-ss],[data-sku],.filters button');
+  const t=e.target.closest('[data-act],[data-toggle],[data-lb],[data-sr],[data-sku],.filters button');
   if(!t) return;
-  if(t.dataset.cm){chartState.mode=t.dataset.cm;return route();}
-  if(t.dataset.ss){chartState.series=t.dataset.ss;return route();}
   if(t.dataset.sr){chartState[t.dataset.sr]=!chartState[t.dataset.sr];return route();}
   if(t.dataset.sku){skuState[t.dataset.sku]=skuState[t.dataset.sku]===false;return route();}
   if(t.dataset.act){
@@ -1163,6 +1206,7 @@ document.addEventListener('click',e=>{
       .map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`)));return;}
     if(a==='export'){return toast('⬇ Export queued — lands in your downloads (demo)');}
     if(a==='sendsugg'){return toast(`💡 Sent to ${t.dataset.org}’s ESG admin — delivered to their notification inbox & logged`);}
+    if(a==='alertact'){return toast(`✅ ${t.dataset.m} — action logged (demo)`);}
   }
   if(t.dataset.lb!==undefined&&t.dataset.lb){ /* leaderboard toggle */
     t.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));t.classList.add('on');
